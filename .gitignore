@@ -1,0 +1,13 @@
+*.[oa]
+designGraph/
+Debug/
+Release/
+obj/
+clientcourse/
+sdkDemo/
+servercourse/
+TSlaver/
+*.ncb
+*.opt
+*.plg
+*.tmp

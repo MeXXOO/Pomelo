@@ -1,0 +1,22 @@
+1.CSocketDispatchGroup: dispatch user group
+	listSocket --> 
+
+CSocketManager:
+	listDispatchGroup ===> CSocketDispatchGroup
+
+	createTcpSocket ====> socketDispatchGroup
+	createUdpSocket
+	createLsnSocket
+
+	lockuser ==> 1.lock
+		adduser		---->
+		removeuser	---->
+
+		releaselist
+
+	lockevent ==> 2.lock
+		addevent	----> ev bAdd
+		removeevent	----> 
+
+		事件通知标识判断，不作查找
+		只处理事件通知查找
