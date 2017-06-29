@@ -96,7 +96,7 @@ IME_EXTERN_C IMeLock*    IMeLockCreate()
         if( !pthread_mutex_init( &pLock->mutex , &pLock->mutex_attr ) )
         {
             DebugLogString( TRUE , "[IMeCLockCreate] pthread_mutex_init failed!" );
-            pthread_mutexattr_destroy( &pEvent->mutex_attr );
+            pthread_mutexattr_destroy( &pLock->mutex_attr );
             free(pLock);
             pLock = NULL;
             break;

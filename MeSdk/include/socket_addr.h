@@ -37,7 +37,7 @@ struct _socket_addr_t_
 {
     char*    hostname;                   //host name
     void*    ipstr;						 //ip address 
-    ushort   family;                     //address family ip_4 ip_6 ...
+    uint16_t   family;                     //address family ip_4 ip_6 ...
 	char	 ipBuf[64];					 //save ip string
     union{
         struct sockaddr_in      addr_ip4;
@@ -46,12 +46,12 @@ struct _socket_addr_t_
     socket_addr_t*  next;                //more than one net device
 };
 
-uint8   inet_ntop( int af, const void *src, char *dst, int size );
+uint8_t inet_ntop( int af, const void *src, char *dst, int size );
 char    inet_pton( int af, const char *src, void *dst );
 
-uint8   socket_addr_init( socket_addr_t* socket_addr , char* ipaddress , ushort port , ushort family );
-uint8   socket_addr_init_byaddr( socket_addr_t* socket_addr , void* addr , ushort family );
-char*	socket_addr_ipaddr( socket_addr_t* socket_addr );
-int		socket_addr_ipport( socket_addr_t* socket_addr );
+uint8_t   	socket_addr_init( socket_addr_t* socket_addr , char* ipaddress , uint16_t port , uint16_t family );
+uint8_t   	socket_addr_init_byaddr( socket_addr_t* socket_addr , void* addr , uint16_t family );
+char*		socket_addr_ipaddr( socket_addr_t* socket_addr );
+int			socket_addr_ipport( socket_addr_t* socket_addr );
 
 #endif

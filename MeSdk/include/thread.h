@@ -5,7 +5,7 @@ typedef struct _IMeThread  IMeThread;
 
 IME_EXTERN_C IMeThread* IMeThreadCreate( void* func , void* parameter );
 
-typedef void    (*IMeThreadExit)( IMeThread* pIThread , uint dwMilliseconds );
+typedef void    (*IMeThreadExit)( IMeThread* pIThread , uint32_t dwMilliseconds );
 typedef void    (*IMeThreadDestroy)( IMeThread* pIThread );
 
 struct _IMeThread{

@@ -8,11 +8,11 @@
 
 #endif
 
-static char  inet_pton4(const char *src, uchar *dst)
+static char  inet_pton4(const char *src, uint8_t *dst)
 {
 	static const char digits[] = "0123456789";
 	int saw_digit, octets, ch;
-	uchar tmp[IN4ADDRSZ], *tp;
+	uint8_t tmp[IN4ADDRSZ], *tp;
 
 	saw_digit = 0;
 	octets = 0;
@@ -21,7 +21,7 @@ static char  inet_pton4(const char *src, uchar *dst)
 		const char *pch;
 
 		if ((pch = strchr(digits, ch)) != NULL) {
-			uint new = *tp * 10 + (pch - digits);
+			uint32_t new = *tp * 10 + (pch - digits);
 
 			if (new > 255)
 				return (0);
@@ -46,14 +46,14 @@ static char  inet_pton4(const char *src, uchar *dst)
 	return (1);
 }
 
-static char  inet_pton6(const char *src, uchar *dst)
+static char  inet_pton6(const char *src, uint8_t *dst)
 {
 	static const char xdigits_l[] = "0123456789abcdef",
 			  xdigits_u[] = "0123456789ABCDEF";
-	uchar tmp[IN6ADDRSZ], *tp, *endp, *colonp;
+	uint8_t tmp[IN6ADDRSZ], *tp, *endp, *colonp;
 	const char *xdigits, *curtok;
 	int ch, saw_xdigit;
-	uint val;
+	uint32_t val;
 
 	memset((tp = tmp), '\0', IN6ADDRSZ);
 	endp = tp + IN6ADDRSZ;
@@ -88,8 +88,8 @@ static char  inet_pton6(const char *src, uchar *dst)
             /* ipv6长度超过16字节,异常 */
 			if (tp + INT16SZ > endp)
 				return (0);
-			*tp++ = (uchar) (val >> 8) & 0xff;
-			*tp++ = (uchar) val & 0xff;
+			*tp++ = (uint8_t) (val >> 8) & 0xff;
+			*tp++ = (uint8_t) val & 0xff;
 			saw_xdigit = 0;
 			val = 0;
 			continue;
@@ -106,8 +106,8 @@ static char  inet_pton6(const char *src, uchar *dst)
 	if (saw_xdigit) {
 		if (tp + INT16SZ > endp)
 			return (0);
-		*tp++ = (uchar) (val >> 8) & 0xff;
-		*tp++ = (uchar) val & 0xff;
+		*tp++ = (uint8_t) (val >> 8) & 0xff;
+		*tp++ = (uint8_t) val & 0xff;
 	}
 	if (colonp != NULL) {
 		/*
@@ -144,7 +144,7 @@ char inet_pton(int af, const char *src, void *dst)
     /* NOTREACHED */
 }
 
-static uint8 inet_ntop4(const uchar *src, char *dst, int size)
+static uint8_t inet_ntop4(const uint8_t *src, char *dst, int size)
 {
     const int MIN_SIZE = 16; /* space for 255.255.255.255\0 */
     int n = 0;
@@ -154,7 +154,7 @@ static uint8 inet_ntop4(const uchar *src, char *dst, int size)
         return FALSE;
     }
     do {
-        uchar u = *src++;
+        uint8_t u = *src++;
         if (u > 99) {
             *next++ = '0' + u/100;
             u %= 100;
@@ -174,7 +174,7 @@ static uint8 inet_ntop4(const uchar *src, char *dst, int size)
     return TRUE;
 }
 
-static uint8 inet_ntop6(const uchar *src, char *dst, int size)
+static uint8_t inet_ntop6(const uint8_t *src, char *dst, int size)
 {
     /*
      * Note that int32_t and int16_t need only be "at least" large enough
@@ -185,10 +185,10 @@ static uint8 inet_ntop6(const uchar *src, char *dst, int size)
      */
     char tmp[sizeof "ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255"], *tp;
     struct { int base, len; } best = {-1, 0}, cur = {-1, 0};
-    uint words[IN6ADDRSZ / INT16SZ];
+    uint32_t words[IN6ADDRSZ / INT16SZ];
     int i;
-    const uchar *next_src, *src_end;
-    uint *next_dest;
+    const uint8_t *next_src, *src_end;
+    uint32_t *next_dest;
 
     /*
      * Preprocess:
@@ -200,9 +200,9 @@ static uint8 inet_ntop6(const uchar *src, char *dst, int size)
     next_dest = words;
     i = 0;
     do {
-        uint next_word = (uint)*next_src++;
+        uint32_t next_word = (uint32_t)*next_src++;
         next_word <<= 8;
-        next_word |= (uint)*next_src++;
+        next_word |= (uint32_t)*next_src++;
         *next_dest++ = next_word;
 
         if (next_word == 0) {
@@ -259,7 +259,11 @@ static uint8 inet_ntop6(const uchar *src, char *dst, int size)
             break;
         }
         //QX @2013/07/31 
+#ifdef PROJECT_FOR_WINDOWS
         tp += _snprintf(tp, sizeof tmp - (tp - tmp), "%x", words[i]);
+#else
+        tp += snprintf(tp, sizeof tmp - (tp - tmp), "%x", words[i]);
+#endif        
         i++;
     }
     /* Was it a trailing run of 0x00's? */
@@ -281,7 +285,7 @@ static uint8 inet_ntop6(const uchar *src, char *dst, int size)
     return TRUE;
 }
 
-uint8 inet_ntop(int af, const void *src, char *dst, int size)
+uint8_t inet_ntop(int af, const void *src, char *dst, int size)
 {
     switch (af) {
     case AF_INET:
@@ -294,9 +298,9 @@ uint8 inet_ntop(int af, const void *src, char *dst, int size)
     /* NOTREACHED */
 }
 
-uint8   socket_addr_init( socket_addr_t* socket_addr , char* ipaddress , ushort port , ushort family )
+uint8_t   socket_addr_init( socket_addr_t* socket_addr , char* ipaddress , uint16_t port , uint16_t family )
 {
-    uint8 bRet = TRUE;
+    uint8_t bRet = TRUE;
     
 	memset( socket_addr, 0, sizeof(socket_addr_t) );
     socket_addr->family = family;
@@ -345,7 +349,7 @@ uint8   socket_addr_init( socket_addr_t* socket_addr , char* ipaddress , ushort 
     return bRet;
 }
 
-uint8     socket_addr_init_byaddr( socket_addr_t* socket_addr , void* addr , ushort family )
+uint8_t     socket_addr_init_byaddr( socket_addr_t* socket_addr , void* addr , uint16_t family )
 {
 	socket_addr_t* addr_cur = (socket_addr_t*)addr;
 
@@ -369,7 +373,7 @@ uint8     socket_addr_init_byaddr( socket_addr_t* socket_addr , void* addr , ush
 
 char*	socket_addr_ipaddr( socket_addr_t* socket_addr )
 {
-	uint8 bRet = FALSE;
+	uint8_t bRet = FALSE;
 
 	if( socket_addr->family==AF_INET && sizeof(socket_addr->ipBuf)/sizeof(socket_addr->ipBuf[0]) >= IN4ADDRSTRSZ )
 	{

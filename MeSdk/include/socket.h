@@ -28,45 +28,45 @@
 
 typedef struct _IMeSocket   IMeSocket;
 
-IME_EXTERN_C char*	IMeSocketConvertErrorCodeToString(uint ErrorCode);
+IME_EXTERN_C char*	IMeSocketConvertErrorCodeToString(uint32_t ErrorCode);
 IME_EXTERN_C int	IMeSocketGetNetError();	
 
-IME_EXTERN_C IMeSocket*     IMeSocketCreate( char* ipstr , ushort port , ushort s_family , int s_timeout , int s_type );
-IME_EXTERN_C IMeSocket*     IMeSocketCreateAcceptSocket( HSOCKET socket_des , ushort family , void* remote_addr );
+IME_EXTERN_C IMeSocket*     IMeSocketCreate( char* ipstr , uint16_t port , uint16_t s_family , int s_timeout , int s_type );
+IME_EXTERN_C IMeSocket*     IMeSocketCreateAcceptSocket( int socket_des , uint16_t family , void* remote_addr );
 
 typedef void          (*IMeSocketDestroy)( IMeSocket* pISocket );
 typedef void          (*IMeSocketClose)( IMeSocket* pISocket );
 
-typedef ushort        (*IMeSocketGetAddrType)(IMeSocket* pISocket , uint8 bRemote );
-typedef uint8         (*IMeSocketGetAddrStr)(IMeSocket* pISocket , uint8 bRemote , char* strbuf , int nLen/* ipv4-16B | ipv6-40B */ );
-typedef uint8         (*IMeSocketGetAddrNum)(IMeSocket* pISocket , uint8 bRemote , char* bytebufer , int nLen/* ipv4-4B | ipv6-16B */ );
-typedef ushort        (*IMeSocketGetPort)(IMeSocket* pISocket , uint8 bRemote );
+typedef uint16_t        (*IMeSocketGetAddrType)(IMeSocket* pISocket , uint8_t bRemote );
+typedef uint8_t         (*IMeSocketGetAddrStr)(IMeSocket* pISocket , uint8_t bRemote , char* strbuf , int nLen/* ipv4-16B | ipv6-40B */ );
+typedef uint8_t         (*IMeSocketGetAddrNum)(IMeSocket* pISocket , uint8_t bRemote , char* bytebufer , int nLen/* ipv4-4B | ipv6-16B */ );
+typedef uint16_t        (*IMeSocketGetPort)(IMeSocket* pISocket , uint8_t bRemote );
 
-typedef uint8         (*IMeSocketConnect)( IMeSocket* pISocket , char* ipstr , ushort port );
-typedef uint8         (*IMeSocketBind)( IMeSocket* pISocket );
-typedef uint8         (*IMeSocketListen)( IMeSocket* pISocket , int backlog );
-typedef uint8         (*IMeSocketAccept)( IMeSocket* pISocket , socket_addr_t* pRemoteAddr , HSOCKET* socket_des );
+typedef uint8_t         (*IMeSocketConnect)( IMeSocket* pISocket , char* ipstr , uint16_t port );
+typedef uint8_t         (*IMeSocketBind)( IMeSocket* pISocket );
+typedef uint8_t         (*IMeSocketListen)( IMeSocket* pISocket , int backlog );
+typedef uint8_t         (*IMeSocketAccept)( IMeSocket* pISocket , socket_addr_t* pRemoteAddr , int* socket_des );
 
 typedef int           (*IMeSocketSend)( IMeSocket* pISocket , char* data , int nLen , int flags );
 typedef int           (*IMeSocketSendToByAddr)( IMeSocket* pISocket , socket_addr_t* pSendAddr , char* data , int nLen , int flags );
-typedef int           (*IMeSocketSendTo)( IMeSocket* pISocket , char* szIP , ushort nPort , ushort family , char* data , int nLen , int flags );
+typedef int           (*IMeSocketSendTo)( IMeSocket* pISocket , char* szIP , uint16_t nPort , uint16_t family , char* data , int nLen , int flags );
 typedef int           (*IMeSocketRecv)( IMeSocket* pISocket , char* buf , int nLen , int flags );
 typedef int           (*IMeSocketRecvFrom)( IMeSocket* pISocket , char* buf , int nLen , int flags );
 typedef int           (*IMeSocketRecvFromByAddr)( IMeSocket* pISocket , char* buf , int nLen , socket_addr_t* pRcvAddr , int flags );
 
-typedef uint8         (*IMeSockeSetTimeOut)(IMeSocket *socket, int new_t);
+typedef uint8_t         (*IMeSockeSetTimeOut)(IMeSocket *socket, int new_t);
 typedef int           (*IMeSocketGetOpt)( IMeSocket* pISocket , int opt );
-typedef uint8         (*IMeSocketSetOpt)( IMeSocket* pISocket , int opt , int on);
-typedef uint8         (*IMeSocketGetReadSize)( IMeSocket* pISocket , uint* pBufferLen );
+typedef uint8_t         (*IMeSocketSetOpt)( IMeSocket* pISocket , int opt , int on);
+typedef uint8_t         (*IMeSocketGetReadSize)( IMeSocket* pISocket , uint32_t* pBufferLen );
 
-typedef HSOCKET       (*IMeSocketGetFd)( IMeSocket* pISocket );
+typedef int       (*IMeSocketGetFd)( IMeSocket* pISocket );
 typedef int           (*IMeSocketGetType)( IMeSocket* pISocket );
 
-typedef	void		  (*IMeSocketSetEventParameter)( IMeSocket* pISocket , uint parameter  );
-typedef uint		  (*IMeSocketGetEventParameter)( IMeSocket* pISocket );
+typedef	void		  (*IMeSocketSetEventParameter)( IMeSocket* pISocket , uint32_t parameter  );
+typedef uint32_t		  (*IMeSocketGetEventParameter)( IMeSocket* pISocket );
 
-typedef void		  (*IMeSocketSetExtendParameter)( IMeSocket* pISocket , uint parameter );
-typedef uint		  (*IMeSocketGetExtendParameter)( IMeSocket* pISocket );
+typedef void		  (*IMeSocketSetExtendParameter)( IMeSocket* pISocket , uint32_t parameter );
+typedef uint32_t		  (*IMeSocketGetExtendParameter)( IMeSocket* pISocket );
 
 struct _IMeSocket{
     IMeSocketDestroy    m_pDestroy;

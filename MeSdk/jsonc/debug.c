@@ -31,8 +31,10 @@
 #include "debug.h"
 
 static int _jsoncsyslog = 0;
-static int _jsoncdebug = 0;
 
+#ifdef MC_MAINTAINER_MODE
+static int _jsoncdebug = 0;
+#endif
 
 void MC_ERROR(const char *msg, ...)
 {

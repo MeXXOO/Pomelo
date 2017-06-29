@@ -13,13 +13,13 @@
 #ifndef _json_object_h_
 #define _json_object_h_
 
-#ifdef __GNUC__
-#define THIS_FUNCTION_IS_DEPRECATED(func) func __attribute__ ((deprecated))
-#elif defined(WIN32) && _MSC_VER>1200 //vc6.0 ==> 1200
-#define THIS_FUNCTION_IS_DEPRECATED(func) __declspec(deprecated) func
-#else
+//#ifdef __GNUC__
+//#define THIS_FUNCTION_IS_DEPRECATED(func) func __attribute__ ((deprecated))
+//#elif defined(WIN32) && _MSC_VER>1200 //vc6.0 ==> 1200
+//#define THIS_FUNCTION_IS_DEPRECATED(func) __declspec(deprecated) func
+//#else
 #define THIS_FUNCTION_IS_DEPRECATED(func) func
-#endif
+//#endif
 
 #include "../include/platdefine.h"
 

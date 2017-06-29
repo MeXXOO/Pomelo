@@ -11,16 +11,16 @@ typedef struct _IMeCSocketListen
     OnSocketConnectCallBack m_pNewConnectCB;
     void*   m_upApp;
 
-    uint8   m_bRunning;
+    uint8_t   m_bRunning;
     IMeEvent*   m_evWaitFree;
 
     int m_nWaitCount;
 
-	uint	m_dispatchUser_extendParameter;
+	uint32_t	m_dispatchUser_extendParameter;
 
 }IMeCSocketListen;
 
-IME_EXTERN_C uint8      IMeCListenSocketListen( IMeCSocketListen* pListenSocket )
+IME_EXTERN_C uint8_t      IMeCListenSocketListen( IMeCSocketListen* pListenSocket )
 {
     if( !CSocketBind( pListenSocket->m_pSocket ) )
     {
@@ -37,7 +37,7 @@ IME_EXTERN_C uint8      IMeCListenSocketListen( IMeCSocketListen* pListenSocket 
     return TRUE;
 }
 
-IME_EXTERN_C uint8    IMeCListenSocketCreateNew( IMeCSocketListen* pListenSocket , ushort family , HSOCKET socket_des , socket_addr_t* pAddr )
+IME_EXTERN_C uint8_t    IMeCListenSocketCreateNew( IMeCSocketListen* pListenSocket , uint16_t family , int socket_des , socket_addr_t* pAddr )
 {
     IMeSocket* pSocketClient = NULL;
 
@@ -57,7 +57,7 @@ IME_EXTERN_C uint8    IMeCListenSocketCreateNew( IMeCSocketListen* pListenSocket
 IME_EXTERN_C void	IMeListenSocketDispatchUserRcv( IMeSocketDispatchUser* pSocketDispatchUser )
 {
     socket_addr_t addr_remote;
-    HSOCKET socket_des;
+    int socket_des;
 
 	IMeCSocketListen* pSocketListen = (IMeCSocketListen*)pSocketDispatchUser;
 
@@ -82,7 +82,7 @@ IME_EXTERN_C void	IMeListenSocketDispatchUserSend( IMeSocketDispatchUser* pSocke
 IME_EXTERN_C void	IMeListenSocketDispatchUserException( IMeSocketDispatchUser* pSocketDispatchUser )
 {
 	IMeCSocketListen* pSocketListen = (IMeCSocketListen*)pSocketDispatchUser;
-	DebugLogString( TRUE , "[IMeListenSocketDispatchUserException] socket exception event occur!!" );
+	DebugLogString( TRUE , "[IMeListenSocketDispatchUserException] socket exception event occur %0x!!" , (uint32_t)pSocketListen );
 }
 
 IME_EXTERN_C void	IMeListenSocketDispatchUserRemove( IMeSocketDispatchUser* pSocketDispatchUser )
@@ -95,13 +95,13 @@ IME_EXTERN_C void	IMeListenSocketDispatchUserRemove( IMeSocketDispatchUser* pSoc
 	DebugLogString( TRUE , "[IMeListenSocketDispatchUserRemove] socket remove from dispatch group!!" );
 }
 
-IME_EXTERN_C void	IMeListenSocketDispatchUserSetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser , uint extendParameter )
+IME_EXTERN_C void	IMeListenSocketDispatchUserSetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser , uint32_t extendParameter )
 {
 	IMeCSocketListen* pSocketListen = (IMeCSocketListen*)pSocketDispatchUser;
 	pSocketListen->m_dispatchUser_extendParameter = extendParameter;
 }
 
-IME_EXTERN_C uint	IMeListenSocketDispatchUserGetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser )
+IME_EXTERN_C uint32_t	IMeListenSocketDispatchUserGetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser )
 {
 	IMeCSocketListen* pSocketListen = (IMeCSocketListen*)pSocketDispatchUser;
 	return pSocketListen->m_dispatchUser_extendParameter;

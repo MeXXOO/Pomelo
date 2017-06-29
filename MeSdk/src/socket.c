@@ -32,8 +32,11 @@ char	IsConnectBlocked(DWORD dwErrorCode)
 #define         GetNetOsError()           errno
 #define         SOCKET_FD(fd)             (fd+1)
 #define         SOCKET_CONNECT_PROGRESS   EINPROGRESS
+#define         NET_SOCKET_ERROR          -1
+#define         NET_INVALIDSOCKET         -1
+#define         ioctlsocket(a,b,c)        (ioctl(a,b,c))  
 
-IME_EXTERN_C char*	ConvertErrorCodeToString(uint ErrorCode) 
+IME_EXTERN_C char*	ConvertErrorCodeToString(uint32_t ErrorCode) 
 {
     return strerror(ErrorCode);
 }
@@ -55,7 +58,7 @@ char	IsConnectBlocked(int nErrorCode)
 #endif
 
 
-IME_EXTERN_C char*  IMeSocketConvertErrorCodeToString(uint ErrorCode)
+IME_EXTERN_C char*  IMeSocketConvertErrorCodeToString(uint32_t ErrorCode)
 {
 	return ConvertErrorCodeToString(ErrorCode);
 }
@@ -74,21 +77,21 @@ IME_EXTERN_C int	IMeSocketGetNetError()
 typedef struct _IMeCSocket
 {
     IMeSocket   interfacefunction;
-    HSOCKET  socket_des;         //socket description
+    int  socket_des;         //socket description
     int s_type;                 //socket type:SOCK_STREAM/SOCK_DGRAM/SOCK_RAM
     int s_protocol;             //socket protocol:UDP/TCP
     int s_timeout;              //socket operation timeout
     int s_mask;                 //socket opt mask
     socket_addr_t*  local_addr;             //local net address
     socket_addr_t*  remote_addr;            //remote net address
-	uint s_extendparameter;
-	uint s_eventparameter;
+	uint32_t s_extendparameter;
+	uint32_t s_eventparameter;
 }IMeCSocket; 
 
 
-uint8     IMeCSocketGetAddrStr(IMeSocket* pISocket , uint8 bRemote , char* ipbuf , int nLen)
+uint8_t     IMeCSocketGetAddrStr(IMeSocket* pISocket , uint8_t bRemote , char* ipbuf , int nLen)
 {
-    uint8 bRet = TRUE;
+    uint8_t bRet = TRUE;
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
     
     if( !ipbuf )    return FALSE;
@@ -119,10 +122,10 @@ uint8     IMeCSocketGetAddrStr(IMeSocket* pISocket , uint8 bRemote , char* ipbuf
     return bRet;
 }
 
-uint8         IMeCSocketGetAddrNum(IMeSocket* pISocket , uint8 bRemote , char* bytebufer , int nLen )
+uint8_t         IMeCSocketGetAddrNum(IMeSocket* pISocket , uint8_t bRemote , char* bytebufer , int nLen )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
-    uint8 bRes = FALSE;
+    uint8_t bRes = FALSE;
 
     if( !bytebufer )  return bRes;
     
@@ -156,9 +159,9 @@ uint8         IMeCSocketGetAddrNum(IMeSocket* pISocket , uint8 bRemote , char* b
     return bRes;
 }
 
-ushort      IMeCSocketGetPort( IMeSocket* pISocket , uint8 bRemote )
+uint16_t      IMeCSocketGetPort( IMeSocket* pISocket , uint8_t bRemote )
 {
-    ushort port = 0;
+    uint16_t port = 0;
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
 
     if( bRemote )
@@ -187,7 +190,7 @@ ushort      IMeCSocketGetPort( IMeSocket* pISocket , uint8 bRemote )
     return port;
 }
 
-ushort           IMeCSocketGetAddrType( IMeSocket* pISocket , uint8 bRemote )
+uint16_t           IMeCSocketGetAddrType( IMeSocket* pISocket , uint8_t bRemote )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
 
@@ -204,7 +207,7 @@ ushort           IMeCSocketGetAddrType( IMeSocket* pISocket , uint8 bRemote )
 //////////////////////////////////////////////////////////////////////////
 //********************** socket attribute opt start ********************//
 //////////////////////////////////////////////////////////////////////////
-#define         SOCKET_MAX_SECS_TO_LINGER   30  /* 每秒最多接受连接数 */
+#define         SOCKET_MAX_SECS_TO_LINGER   30  /* ????×??à?óêüá??óêy */
 
 #define socket_is_option_set(mask, option)  ((mask & option) ==option)
 #define socket_set_option(mask, option, on) \
@@ -216,19 +219,20 @@ ushort           IMeCSocketGetAddrType( IMeSocket* pISocket , uint8 bRemote )
     } while (0)
 
 
-uint8 soblock(HSOCKET sd)
+uint8_t soblock(int sd)
 {
     u_long zero = 0;
-    
+
     if(ioctlsocket(sd, FIONBIO, &zero) == NET_SOCKET_ERROR) 
     {
         DebugLogString( TRUE , "[soblock]:%s" , ConvertErrorCodeToString(GetNetOsError()) );
         return FALSE;
     }
+
     return TRUE;
 }
 
-uint8 sononblock(HSOCKET sd)
+uint8_t sononblock(int sd)
 {
     u_long one = 1;
     
@@ -240,7 +244,7 @@ uint8 sononblock(HSOCKET sd)
     return TRUE;
 }
 
-uint8 IMeCSocketSetTimeOut(IMeSocket *pISocket, int new_t)
+uint8_t IMeCSocketSetTimeOut(IMeSocket *pISocket, int new_t)
 {   
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
     if(new_t == 0) 
@@ -319,26 +323,20 @@ int  IMeCSocketGetOpt( IMeSocket* pISocket , int opt )
     return res;
 }
 
-uint8 IMeCSocketGetReadSize( IMeSocket* pISocket , uint* pBufferLen )
+uint8_t IMeCSocketGetReadSize( IMeSocket* pISocket , uint32_t* pBufferLen )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
-#ifdef  PROJECT_FOR_WINDOWS
+
     if( NET_SOCKET_ERROR==ioctlsocket( pSocket->socket_des , FIONREAD , (u_long*)&pBufferLen ) )
     {
         DebugLogString( TRUE , "[IMeCSocketGetReadSize] ioctlsocket error %s" , GetNetOsError() );
         return FALSE;
     }
-#elif   PROJECT_FOR_LINUX
-    if( NET_SOCKET_ERROR==ioctl( pSocket->socket_des , FIONREAD , (void*)pBufferLen ) )
-    {
-        DebugLogString( TRUE , "[IMeCSocketGetReadSize] ioctlsocket error %s" , GetNetOsError() );
-        return FALSE;
-    }
-#endif
+
     return TRUE;
 }
 
-uint8 IMeCSocketSetOpt( IMeSocket* pISocket , int opt, int on)
+uint8_t IMeCSocketSetOpt( IMeSocket* pISocket , int opt, int on)
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
     int one;
@@ -463,7 +461,7 @@ uint8 IMeCSocketSetOpt( IMeSocket* pISocket , int opt, int on)
 //////////////////////////////////////////////////////////////////////////
 //************************** socket net opt start **********************//
 //////////////////////////////////////////////////////////////////////////
-uint8     IMeCSocketConnect( IMeSocket* pISocket , char* ipstr , ushort port )
+uint8_t     IMeCSocketConnect( IMeSocket* pISocket , char* ipstr , uint16_t port )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
     const struct sockaddr* pRemoteAddres = NULL;
@@ -491,27 +489,27 @@ uint8     IMeCSocketConnect( IMeSocket* pISocket , char* ipstr , ushort port )
 
     if( connect(pSocket->socket_des , pRemoteAddres , nRemoteAddressLen ) != 0 )
     {
-        uint       socket_error = 0;
+        uint32_t       socket_error = 0;
         struct timeval tv,*ptrTime;
         fd_set write_fdset, exception_fdset;
         
         socket_error = GetNetOsError();
         
-        /* 非阻塞连接,调用立即返回连接中状态 */
+        /* ·?×èè?á??ó,μ÷ó?á￠?′·μ??á??ó?D×′ì? */
         if( socket_error != SOCKET_CONNECT_PROGRESS )  
         {
             DebugLogString( TRUE , "[IMeCSocketConnect] connect failed error:%s" , ConvertErrorCodeToString(socket_error) );
             return FALSE;
         }
         
-        /* 设置等待时间为零,则直接返回,否则等待连接完成或是超时返回 */
+        /* éè??μè′yê±???aá?,?ò?±?ó·μ??,·??òμè′yá??óíê3é?òê?3?ê±·μ?? */
         if( pSocket->s_timeout==0 )
         {
             DebugLogString( TRUE , "[IMeCSocketConnect] connecting ......" );
             return TRUE;
         }
         
-        /* 等待连接完成或是连接超时 */
+        /* μè′yá??óíê3é?òê?á??ó3?ê± */
         FD_ZERO(&write_fdset);
         FD_SET( SOCKET_FD(pSocket->socket_des) , &write_fdset );
         FD_ZERO(&exception_fdset);
@@ -563,7 +561,7 @@ uint8     IMeCSocketConnect( IMeSocket* pISocket , char* ipstr , ushort port )
     return TRUE;
 }
 
-uint8     IMeCSocketBind( IMeSocket* pISocket )
+uint8_t     IMeCSocketBind( IMeSocket* pISocket )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
     const struct sockaddr* pLocalAddres = NULL;
@@ -597,7 +595,7 @@ uint8     IMeCSocketBind( IMeSocket* pISocket )
     return TRUE;
 }
 
-uint8    IMeCSocketListen( IMeSocket* pISocket , int backlog )
+uint8_t    IMeCSocketListen( IMeSocket* pISocket , int backlog )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
 
@@ -610,10 +608,10 @@ uint8    IMeCSocketListen( IMeSocket* pISocket , int backlog )
     return TRUE;
 }
 
-uint8    IMeCSocketAccept( IMeSocket* pISocket , socket_addr_t* pRemoteAddr , HSOCKET* socket_des )
+uint8_t    IMeCSocketAccept( IMeSocket* pISocket , socket_addr_t* pRemoteAddr , int* socket_des )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
-    uint8 bRes = FALSE;
+    uint8_t bRes = FALSE;
     int nAddrLen;
     struct sockaddr* pAddr;
 
@@ -623,7 +621,7 @@ uint8    IMeCSocketAccept( IMeSocket* pISocket , socket_addr_t* pRemoteAddr , HS
         return bRes;
     }    
     
-    /* 接受ipv4的请求 */
+    /* ?óêüipv4μ????ó */
     if( pSocket->local_addr->family==AF_INET )
     {
         nAddrLen = sizeof(struct sockaddr_in);
@@ -631,7 +629,7 @@ uint8    IMeCSocketAccept( IMeSocket* pISocket , socket_addr_t* pRemoteAddr , HS
         pRemoteAddr->family = AF_INET;
         pRemoteAddr->ipstr = &pRemoteAddr->addr_ip4.sin_addr;
     }
-    /* 接受ipv6的请求 */
+    /* ?óêüipv6μ????ó */
     else
     {
         nAddrLen = sizeof(struct sockaddr_in6);
@@ -665,7 +663,6 @@ int     IMeCSocketSend( IMeSocket* pISocket , char* data , int nLen , int flags 
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
     int   sendStatus = 0;
-    uint8  bCheckWrite = TRUE;
     
     sendStatus = send(pSocket->socket_des, data, nLen, flags);
     if( sendStatus==NET_SOCKET_ERROR )
@@ -679,11 +676,10 @@ int     IMeCSocketSend( IMeSocket* pISocket , char* data , int nLen , int flags 
     return sendStatus;
 }
 
-int    IMeCSocketSendTo( IMeSocket* pISocket , char* szIP , ushort nPort , ushort family , char* data , int nLen , int flags )
+int    IMeCSocketSendTo( IMeSocket* pISocket , char* szIP , uint16_t nPort , uint16_t family , char* data , int nLen , int flags )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
     int      sendStatus  = 0;
-    uint8     bCheckWrite = TRUE;
     
     struct sockaddr* pRemoteAddress = NULL;
     int nRemoteAddressLen = 0;
@@ -737,7 +733,6 @@ int    IMeCSocketSendToByAddr( IMeSocket* pISocket , socket_addr_t* pSendAddr , 
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
     int      sendStatus  = 0;
-    uint8     bCheckWrite = TRUE;
 
     struct sockaddr* pRemoteAddress = NULL;
     int nRemoteAddressLen = 0;
@@ -878,7 +873,7 @@ void   IMeCSocketClose( IMeSocket* pISocket )
     }
 }
 
-HSOCKET    IMeCSocketGetFd( IMeSocket* pISocket )
+int    IMeCSocketGetFd( IMeSocket* pISocket )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
     return pSocket->socket_des;
@@ -890,25 +885,25 @@ int    IMeCSocketGetType( IMeSocket* pISocket )
     return pSocket->s_type;
 }
 
-void	IMeCSocketSetExtendParameter( IMeSocket* pISocket , uint parameter )
+void	IMeCSocketSetExtendParameter( IMeSocket* pISocket , uint32_t parameter )
 {
 	IMeCSocket* pSocket = (IMeCSocket*)pISocket;
 	pSocket->s_extendparameter = parameter;
 }
 
-uint	IMeCSocketGetExtendParameter( IMeSocket* pISocket )
+uint32_t	IMeCSocketGetExtendParameter( IMeSocket* pISocket )
 {
 	IMeCSocket* pSocket = (IMeCSocket*)pISocket;
 	return pSocket->s_extendparameter;	
 }
 
-void	IMeCSocketSetEventParameter( IMeSocket* pISocket , uint parameter  )
+void	IMeCSocketSetEventParameter( IMeSocket* pISocket , uint32_t parameter  )
 {
 	IMeCSocket* pSocket = (IMeCSocket*)pISocket;
 	pSocket->s_eventparameter = parameter;
 }
 
-uint	IMeCSocketGetEventParameter( IMeSocket* pISocket )
+uint32_t	IMeCSocketGetEventParameter( IMeSocket* pISocket )
 {
 	IMeCSocket* pSocket = (IMeCSocket*)pISocket;
 	return pSocket->s_eventparameter;	
@@ -943,7 +938,7 @@ uint	IMeCSocketGetEventParameter( IMeSocket* pISocket )
 	((IMeSocket*)p)->m_pGetEventParameter = IMeCSocketGetEventParameter
 
 /* listen socket tcp use */
-IMeSocket*    IMeSocketCreateAcceptSocket( HSOCKET socket_des , ushort family , void* remote_addr )
+IMeSocket*    IMeSocketCreateAcceptSocket( int socket_des , uint16_t family , void* remote_addr )
 {
     IMeCSocket* pAcceptSocket = NULL;
     if( !remote_addr )
@@ -982,10 +977,10 @@ IMeSocket*    IMeSocketCreateAcceptSocket( HSOCKET socket_des , ushort family , 
     return (IMeSocket*)pAcceptSocket;
 }
 
-IME_EXTERN_C IMeSocket*     IMeSocketCreate( char* ipstr , ushort port , ushort s_family , int s_timeout , int s_type )
+IME_EXTERN_C IMeSocket*     IMeSocketCreate( char* ipstr , uint16_t port , uint16_t s_family , int s_timeout , int s_type )
 {
-    uint8 bCreaetOk = FALSE;
-	int s_protocol;
+    uint8_t bCreaetOk = FALSE;
+	int s_protocol = IPPROTO_TCP;
 
     IMeCSocket* pSocket = (IMeCSocket*)calloc(1,sizeof(IMeCSocket));
     if( !pSocket )

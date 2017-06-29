@@ -3,7 +3,7 @@
 #define     IMeCArray_DefaultSize    1
 
 typedef struct _CNode{
-    uint64  keyValue;
+    uint64_t  keyValue;
     void*   data;
 }CNode;
 
@@ -19,7 +19,7 @@ typedef struct _IMeCArray{
 	void* mParameter;
 }IMeCArray;
 
-int    IMeCArrayCompareKeyValue( IMeCArray* pArray, uint64 keyValue1, uint64 keyValue2 )
+int    IMeCArrayCompareKeyValue( IMeCArray* pArray, uint64_t keyValue1, uint64_t keyValue2 )
 {
     if( pArray->mCompareKeyValue )
         return pArray->mCompareKeyValue(keyValue1,keyValue2,pArray->mParameter);
@@ -34,7 +34,7 @@ int    IMeCArrayCompareKeyValue( IMeCArray* pArray, uint64 keyValue1, uint64 key
     }
 }
 
-int     IMeCArrayInnerFindIndex( IMeCArray* pArray, uint64 keyValue, int low, int high )
+int     IMeCArrayInnerFindIndex( IMeCArray* pArray, uint64_t keyValue, int low, int high )
 {
     int mid = -1;
     int compareResult;
@@ -75,10 +75,10 @@ int     IMeCArrayInnerFindIndex( IMeCArray* pArray, uint64 keyValue, int low, in
     return -1; 
 }
 
-int     IMeCArrayInnerFindInsertPosition( IMeCArray* pArray, uint64 keyValue, int low, int high )
+int     IMeCArrayInnerFindInsertPosition( IMeCArray* pArray, uint64_t keyValue, int low, int high )
 {
     int mid = -1;
-    int compareResult;
+    int compareResult = 0;
 
     //no element or no support sort 
     if( pArray->m_nSize == 0 || pArray->m_nSortType == SORT_NULL )
@@ -158,7 +158,7 @@ int    IMeCArrayInnerSetSize( IMeCArray* pArray, int nNewSize )
     return -1;
 }
 
-int    IMeCArrayInnerInsertAt( IMeCArray* pArray, int nIndex, void* pElement, uint64 keyValue )
+int    IMeCArrayInnerInsertAt( IMeCArray* pArray, int nIndex, void* pElement, uint64_t keyValue )
 {
     int res = 0;
 
@@ -179,7 +179,7 @@ int    IMeCArrayInnerInsertAt( IMeCArray* pArray, int nIndex, void* pElement, ui
     return -1;
 }
 
-int    IMeCArrayInnerAddElement( IMeCArray* pArray, void* pElement, uint64 keyValue )
+int    IMeCArrayInnerAddElement( IMeCArray* pArray, void* pElement, uint64_t keyValue )
 {
     int res = 0;
 
@@ -199,7 +199,7 @@ int    IMeCArrayInnerAddElement( IMeCArray* pArray, void* pElement, uint64 keyVa
     return -1;
 }
 
-int    IMeCArrayAdd( IMeArray* pIArray , void* pElement , uint64 keyValue )
+int    IMeCArrayAdd( IMeArray* pIArray , void* pElement , uint64_t keyValue )
 {
     IMeCArray* pArray = (IMeCArray*)pIArray;
 
@@ -254,7 +254,7 @@ void*   IMeCArrayRemoveAt( IMeArray* pIArray , int nIndex )
     return pValue;
 }
 
-void*    IMeCArrayRemove( IMeArray* pIArray , uint64 keyValue )
+void*    IMeCArrayRemove( IMeArray* pIArray , uint64_t keyValue )
 {
     IMeCArray* pArray = (IMeCArray*)pIArray;
 
@@ -263,14 +263,14 @@ void*    IMeCArrayRemove( IMeArray* pIArray , uint64 keyValue )
     return IMeCArrayRemoveAt( pIArray, nIndex );
 }
 
-int     IMeCArrayFind( IMeArray* pIArray , uint64 keyValue )
+int     IMeCArrayFind( IMeArray* pIArray , uint64_t keyValue )
 {
     IMeCArray* pArray = (IMeCArray*)pIArray;
 
     return IMeCArrayInnerFindIndex( pArray, keyValue, 0, pArray->m_nSize-1 );
 }
 
-void*   IMeCArrayFindData( IMeArray* pIArray , uint64 keyValue )
+void*   IMeCArrayFindData( IMeArray* pIArray , uint64_t keyValue )
 {
     IMeCArray* pArray = (IMeCArray*)pIArray;
     void* pData = NULL;

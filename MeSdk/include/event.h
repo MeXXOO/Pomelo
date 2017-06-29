@@ -3,11 +3,11 @@
 
 typedef struct _IMeEvent    IMeEvent;
 
-IME_EXTERN_C IMeEvent*   IMeEventCreate( uint8 bInitialState , uint8 bReSet );
+IME_EXTERN_C IMeEvent*   IMeEventCreate( uint8_t bInitialState , uint8_t bReSet );
 
 typedef void    (*IMeEventSet)( IMeEvent* pIEvent );
 typedef void    (*IMeEventReset)( IMeEvent* pIEvent );
-typedef uint8   (*IMeEventWait)( IMeEvent* pIEvent , uint dwMilliseconds );
+typedef uint8_t (*IMeEventWait)( IMeEvent* pIEvent , uint32_t dwMilliseconds );
 typedef void    (*IMeEventDestroy)( IMeEvent* pIEvent );
 
 struct _IMeEvent

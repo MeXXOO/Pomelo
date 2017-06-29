@@ -8,9 +8,9 @@ typedef void    (*OnSocketRcvDataCallBack)( char* lpData , int nLen , void* rcvS
 typedef	struct _IMeSocketManager	IMeSocketManager;
 
 typedef IMeSocketTcp*	(*IMeSocketManagerCreateTcpServerSocket)( IMeSocketManager* pISocketManager , IMeSocket* pSocket , OnSocketRcvDataCallBack dataCB , void* upApp );
-typedef IMeSocketTcp*	(*IMeSocketManagerCreateTcpSocket)( IMeSocketManager* pISocketManager , char* ipstr , ushort port , ushort s_family , int s_timeout , OnSocketRcvDataCallBack dataCB , void* upApp );
-typedef IMeSocketUdp*	(*IMeSocketManagerCreateUdpSocket)( IMeSocketManager* pISocketManager , char* ipstr , ushort port , ushort s_family , int s_timeout , OnSocketRcvDataCallBack dataCB , void* upApp );
-typedef IMeSocketLsn*	(*IMeSocketManagerCreateLsnSocket)( IMeSocketManager* pISocketManager , char* ipstr , ushort port , ushort s_family , int s_timeout , OnSocketConnectCallBack connectCB , void* upApp );
+typedef IMeSocketTcp*	(*IMeSocketManagerCreateTcpSocket)( IMeSocketManager* pISocketManager , char* ipstr , uint16_t port , uint16_t s_family , int s_timeout , OnSocketRcvDataCallBack dataCB , void* upApp );
+typedef IMeSocketUdp*	(*IMeSocketManagerCreateUdpSocket)( IMeSocketManager* pISocketManager , char* ipstr , uint16_t port , uint16_t s_family , int s_timeout , OnSocketRcvDataCallBack dataCB , void* upApp );
+typedef IMeSocketLsn*	(*IMeSocketManagerCreateLsnSocket)( IMeSocketManager* pISocketManager , char* ipstr , uint16_t port , uint16_t s_family , int s_timeout , OnSocketConnectCallBack connectCB , void* upApp );
 typedef	void	(*IMeSocketManagerDestroy)( IMeSocketManager* pISocketManager );
 
 struct _IMeSocketManager{

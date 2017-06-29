@@ -10,21 +10,21 @@ typedef struct _IMeArray    IMeArray;
 //keyValue1==keyValue2 ==> 0
 //keyValue1 < keyValue2 ==> 1
 //keyValue1 > keyValue2 ==> -1
-typedef int (*IMeArrayCompareKeyValue)( uint64 keyValue1, uint64 keyValue2, void* parameter );
+typedef int (*IMeArrayCompareKeyValue)( uint64_t keyValue1, uint64_t keyValue2, void* parameter );
 
 IME_EXTERN_C IMeArray*       IMeArrayCreate( int sortType );
 
 typedef void    (*IMeArrayDestroy)( IMeArray* pIArray );
 
-typedef int     (*IMeArrayAdd)( IMeArray* pIArray , void* pElement , uint64 keyValue );
+typedef int     (*IMeArrayAdd)( IMeArray* pIArray , void* pElement , uint64_t keyValue );
 
 typedef void*   (*IMeArrayRemoveAt)( IMeArray* pIArray , int nIndex );
 typedef void    (*IMeArrayRemoveAll)( IMeArray* pIArray );
-typedef void*   (*IMeArrayRemove)( IMeArray* pIArray , uint64 keyValue );
+typedef void*   (*IMeArrayRemove)( IMeArray* pIArray , uint64_t keyValue );
 
 typedef void*   (*IMeArrayGetAt)( IMeArray* pIArray , int nIndex );
-typedef int     (*IMeArrayFind)( IMeArray* pIArray , uint64 keyValue );
-typedef void*   (*IMeArrayFindData)( IMeArray* pIArray , uint64 keyValue );
+typedef int     (*IMeArrayFind)( IMeArray* pIArray , uint64_t keyValue );
+typedef void*   (*IMeArrayFindData)( IMeArray* pIArray , uint64_t keyValue );
 
 typedef int     (*IMeArrayGetSize)( IMeArray* pIArray );
 

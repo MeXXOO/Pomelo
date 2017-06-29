@@ -36,9 +36,9 @@ typedef     struct  _IMeCSocketTcp
 	//receive cache packet
 	IMeTcpDataPacket	m_RcvCachePacket;
 
-	uint	m_dispatchUser_extendParameter;
+	uint32_t	m_dispatchUser_extendParameter;
 
-	uint8	m_bRunning;
+	uint8_t	m_bRunning;
     IMeEvent*   m_evWaitFree;
 }IMeCSocketTcp;
 
@@ -120,7 +120,6 @@ void	IMeTcpSocketDispatchUserRcv( IMeSocketDispatchUser* pSocketDispatchUser )
 {
 	IMeCSocketTcp* pSocketTcp = (IMeCSocketTcp*)pSocketDispatchUser;
 	int nRes;
-    int nSocketBufferCacheSize = 0;
 	
 	IMeTcpDataPacket* pCacheDataPacket = &pSocketTcp->m_RcvCachePacket;
     
@@ -195,16 +194,16 @@ void	IMeTcpSocketDispatchUserRcv( IMeSocketDispatchUser* pSocketDispatchUser )
 void	IMeTcpSocketDispatchUserException( IMeSocketDispatchUser* pSocketDispatchUser )
 {
 	IMeCSocketTcp* pSocketTcp = (IMeCSocketTcp*)pSocketDispatchUser;
-	DebugLogString( TRUE , "[IMeTcpSocketDispatchUserException] socket exception event occur!!" );
+	DebugLogString( TRUE , "[IMeTcpSocketDispatchUserException] socket exception event occur :%0x!!" , (uint32_t)pSocketTcp );
 }
 
-void	IMeTcpSocketDispatchUserSetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser , uint extendParameter )
+void	IMeTcpSocketDispatchUserSetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser , uint32_t extendParameter )
 {
 	IMeCSocketTcp* pSocketTcp = (IMeCSocketTcp*)pSocketDispatchUser;
 	pSocketTcp->m_dispatchUser_extendParameter = extendParameter;
 }
 
-uint	IMeTcpSocketDispatchUserGetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser )
+uint32_t	IMeTcpSocketDispatchUserGetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser )
 {
 	IMeCSocketTcp* pSocketTcp = (IMeCSocketTcp*)pSocketDispatchUser;
 	return pSocketTcp->m_dispatchUser_extendParameter;
@@ -216,7 +215,7 @@ IMeSocket*	IMeTcpSocketDispatchUserGetSocket( IMeSocketDispatchUser* pSocketDisp
 	return pSocketTcp->m_pSocket;
 }
 
-uint8   IMeCSocketTcpConnect( IMeSocketTcp* pISocketTcp , char* serverAddr , ushort serverPort )
+uint8_t   IMeCSocketTcpConnect( IMeSocketTcp* pISocketTcp , char* serverAddr , uint16_t serverPort )
 {
     IMeCSocketTcp* pSocketTcp = (IMeCSocketTcp*)pISocketTcp;
     return CSocketConnect(pSocketTcp->m_pSocket,serverAddr,serverPort);
@@ -299,7 +298,7 @@ void    IMeCSocketTcpDestroy( IMeSocketTcp* pISocketTcp )
     //release cache buffer
     CLock_Lock( pSocketTcp->m_lockerPacket );
 	
-    while( pDataPacket = CListRemoveHead(pSocketTcp->m_pListPacket) )
+    while( (pDataPacket = CListRemoveHead(pSocketTcp->m_pListPacket)) )
 	{
 		CMemoryFree( pSocketTcp->m_pMemory , pDataPacket->lpData );
 		CMemoryFree( pSocketTcp->m_pMemory , pDataPacket );

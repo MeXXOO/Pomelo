@@ -3,6 +3,7 @@
 
 #include    <string.h>
 #include    <stdio.h>
+#include    <stdlib.h>
 #include    "platdefine.h"
 
 #include	"../jsonc/json_object.h"

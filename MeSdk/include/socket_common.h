@@ -26,8 +26,8 @@ typedef struct _IMeSndPacket{
 	int     nLen;               /* 数据长度 */
 	char*	lpData;				/* 数据 */
 
-    uint8   nSndTimes;          /* 数据包累计发送的次数 */
-    uint    nLastSndTime;       /* 数据上一次发送的时间 */
+    uint8_t   nSndTimes;          /* 数据包累计发送的次数 */
+    uint32_t    nLastSndTime;       /* 数据上一次发送的时间 */
 }IMeSndPacket;
 
 

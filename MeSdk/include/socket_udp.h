@@ -9,14 +9,14 @@ typedef struct _IMeSocketUdp    IMeSocketUdp;
 typedef void    (*OnUdpSocketCallCallBack)( socket_addr_t* pClientUser , void* upApp );
 
 
-typedef int     (*IMeSocketUdpSend)( IMeSocketUdp* pISocketUdp , char* lpData , int nLen , char* ipStr , ushort port , ushort family );
+typedef int     (*IMeSocketUdpSend)( IMeSocketUdp* pISocketUdp , char* lpData , int nLen , char* ipStr , uint16_t port , uint16_t family );
 typedef int		(*IMeSocketUdpSendByAddr)( IMeSocketUdp* pISocketUdp, char* lpData , int nLen , socket_addr_t* addr );
 typedef void    (*IMeSocketUdpDestroy)( IMeSocketUdp* pISocketUdp );
-typedef uint8	(*IMeSocketUdpBind)( IMeSocketUdp* pISocketUdp );
+typedef uint8_t	(*IMeSocketUdpBind)( IMeSocketUdp* pISocketUdp );
 typedef void    (*IMeSocketUdpSetOpt)( IMeSocketUdp* pISocketUdp, int opt, int optValue );
-typedef void	(*IMeSocketUdpEnableAsTcp)( IMeSocketUdp* pISocketUdp, uint8 bEnable );
+typedef void	(*IMeSocketUdpEnableAsTcp)( IMeSocketUdp* pISocketUdp, uint8_t bEnable );
 typedef void	(*IMeSocketUdpSetClientCallBack)( IMeSocketUdp* pISocketUdp, OnUdpSocketCallCallBack cb, void* upApp );
-typedef void	(*IMeSocketUdpCallUser)( IMeSocketUdp* pISocketUdp, char* ipStr, ushort port, ushort family );
+typedef void	(*IMeSocketUdpCallUser)( IMeSocketUdp* pISocketUdp, char* ipStr, uint16_t port, uint16_t family );
 
 struct _IMeSocketUdp
 {

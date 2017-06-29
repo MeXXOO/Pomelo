@@ -1,10 +1,10 @@
 #include	"../include/include.h"
 
 //dispatch user event
-#define		MAKE_EVENT_KEY(p)	((int64)(p)->pSocket<<32|(int)((p)->ev)<<16|(p)->bAdd)
+#define		MAKE_EVENT_KEY(p)	(((uint64_t)(uint32_t)((p)->pSocket))<<32|(int)((p)->ev)<<16|(p)->bAdd)
 typedef	struct _IMeCSocketDispatchUserEvent{
 	short	ev;
-	uchar	bAdd;
+	uint8_t	bAdd;
 	IMeSocket* pSocket;
 }IMeCSocketDispatchUserEvent;
 
@@ -12,7 +12,7 @@ typedef struct _IMeCSocketDispatchGroup{
 	
 	IMeSocketDispatchGroup	vtbl;
 
-	uint8	m_bRunning;
+	uint8_t	m_bRunning;
 
 	IMeThread*	m_pWorkerThread;
 	
@@ -41,7 +41,7 @@ static void IMeCSocketDispatchGroupReleaseEventList( IMeCSocketDispatchGroup* pS
 
 	CLock_Lock( pSocketDispatchGroup->m_pLockEvent );
 	
-	while( pUserEvent=(IMeCSocketDispatchUserEvent*)CListRemoveHead(pSocketDispatchGroup->m_pListFreeEvent) )
+	while( (pUserEvent=(IMeCSocketDispatchUserEvent*)CListRemoveHead(pSocketDispatchGroup->m_pListFreeEvent)) )
 		free( pUserEvent );
 
     for( i=0; i<CArrayGetSize(pSocketDispatchGroup->m_parrEvent); i++ )
@@ -75,7 +75,7 @@ static void IMeCSocketDispatchGroupReleaseUserList( IMeCSocketDispatchGroup* pSo
     CArrayRemoveAll( pSocketDispatchGroup->m_parrGrpUser );
 	
 
-	while( pSocket=(IMeSocket*)CListRemoveHead(pSocketDispatchGroup->m_pListReleaseSocket) )
+	while( (pSocket=(IMeSocket*)CListRemoveHead(pSocketDispatchGroup->m_pListReleaseSocket)) )
 	{
         pSocketDispatchUser = (IMeSocketDispatchUser*)CSocketGetExtendParameter(pSocket);
         CSocketDispatchUserRemove( pSocketDispatchUser );
@@ -134,7 +134,7 @@ IME_EXTERN_C void IMeCSocketDispatchGroupCheckUserEvent( IMeCSocketDispatchGroup
         if( !pUserEvent )   break;
 
         CLock_Lock( pSocketDispatchGroup->m_pLockGrpUser );
-        nFreeIndex = CArrayFind( pSocketDispatchGroup->m_parrGrpUser , (uint64)pUserEvent->pSocket );
+        nFreeIndex = CArrayFind( pSocketDispatchGroup->m_parrGrpUser , (uint32_t)(pUserEvent->pSocket) );
         CLock_Unlock( pSocketDispatchGroup->m_pLockGrpUser );
 
 		if( nFreeIndex != -1 )
@@ -189,7 +189,7 @@ static void	IMeCSocketDispatchGroupWorkThread( void* pWorkGroup )
 	}
 }
 
-IME_EXTERN_C	void	IMeCSocketDispatchGroupNewEvent( IMeSocketDispatchGroup* pISocketDispatchGroup , IMeSocketDispatchUser* pISocketDispatchUser , short ev , uchar bAdd )
+IME_EXTERN_C	void	IMeCSocketDispatchGroupNewEvent( IMeSocketDispatchGroup* pISocketDispatchGroup , IMeSocketDispatchUser* pISocketDispatchUser , short ev , uint8_t bAdd )
 {
 	IMeCSocketDispatchGroup* pSocketDispatchGroup = (IMeCSocketDispatchGroup*)pISocketDispatchGroup;
 	IMeCSocketDispatchUserEvent stUserEvent, *pUserEvent = &stUserEvent;
@@ -247,7 +247,7 @@ IME_EXTERN_C	void	IMeCSocketDispatchGroupRemoveUser( IMeSocketDispatchGroup* pIS
 
 	CLock_Lock( pSocketDispatchGroup->m_pLockGrpUser );
 	
-	pSocket = (IMeSocket*)CArrayRemove( pSocketDispatchGroup->m_parrGrpUser , (uint64)pSocket );
+	pSocket = (IMeSocket*)CArrayRemove( pSocketDispatchGroup->m_parrGrpUser , (uint32_t)pSocket );
 	if( pSocket )
 	{
 		CListAddTail( pSocketDispatchGroup->m_pListReleaseSocket , pSocket );
@@ -263,9 +263,9 @@ IME_EXTERN_C	void	IMeCSocketDispatchGroupAddUser( IMeSocketDispatchGroup* pISock
 	
 	CLock_Lock( pSocketDispatchGroup->m_pLockGrpUser );
 
-	if( -1 == CArrayFind( pSocketDispatchGroup->m_parrGrpUser , (uint64)pSocket ) )
+	if( -1 == CArrayFind( pSocketDispatchGroup->m_parrGrpUser , (uint32_t)pSocket ) )
 	{
-		CArrayAdd( pSocketDispatchGroup->m_parrGrpUser , pSocket , (uint64)pSocket );	
+		CArrayAdd( pSocketDispatchGroup->m_parrGrpUser , pSocket , (uint32_t)pSocket );	
 	}
 
 	CLock_Unlock( pSocketDispatchGroup->m_pLockGrpUser );

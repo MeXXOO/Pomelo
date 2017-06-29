@@ -29,10 +29,10 @@ void    IMeCEventReset( IMeEvent* pIEvent )
     }
 }
 
-uint8   IMeCEventWait( IMeEvent* pIEvent , uint dwMilliseconds )
+uint8_t   IMeCEventWait( IMeEvent* pIEvent , uint32_t dwMilliseconds )
 {
     IMeCEvent* pEvent = (IMeCEvent*)pIEvent;
-    uint bWaitRes = WAIT_TIMEOUT;
+    uint32_t bWaitRes = WAIT_TIMEOUT;
     
     if( !pEvent || !pEvent->m_hEvent ) return FALSE;
 
@@ -52,7 +52,7 @@ void    IMeCEventDestroy( IMeEvent* pIEvent )
     free( pEvent );
 }
 
-IME_EXTERN_C IMeEvent*   IMeEventCreate( uint8 bInitialState , uint8 bReSet )
+IME_EXTERN_C IMeEvent*   IMeEventCreate( uint8_t bInitialState , uint8_t bReSet )
 {
     IMeCEvent* pEvent = (IMeCEvent*)calloc(1,sizeof(IMeCEvent));
     while( pEvent )
@@ -85,7 +85,7 @@ typedef struct _IMeCEvent{
     pthread_mutex_t cond_mutex;     /* 互斥锁资源 */
     pthread_mutexattr_t mutex_attr; /* 互斥锁属性 */
     int m_semaphore;    /* 信号量 */
-    uint8 m_bInit;  /* 初始化标识 */
+    uint8_t m_bInit;  /* 初始化标识 */
 }IMeCEvent;
 
 
@@ -138,7 +138,7 @@ void    IMeCEventReset( IMeEvent* pIEvent )
     }
 }
 
-uint8   IMeCEventWait( IMeEvent* pIEvent , uint dwMilliseconds )
+uint8_t   IMeCEventWait( IMeEvent* pIEvent , uint32_t dwMilliseconds )
 {
     IMeCEvent* pEvent = (IMeCEvent*)pIEvent;
     struct timespec abstime;
@@ -151,8 +151,8 @@ uint8   IMeCEventWait( IMeEvent* pIEvent , uint dwMilliseconds )
     gettimeofday(&now, NULL); 
     
     /* add the offset to get timeout value */ 
-    abstime ->tv_nsec = now.tv_usec * 1000 + (dwMilliseconds % 1000) * 1000000; 
-    abstime ->tv_sec = now.tv_sec + dwMilliseconds / 1000;
+    abstime.tv_nsec = now.tv_usec * 1000 + (dwMilliseconds % 1000) * 1000000; 
+    abstime.tv_sec = now.tv_sec + dwMilliseconds / 1000;
 
      if( pthread_mutex_lock( &pEvent->cond_mutex ) != 0 )
      {
@@ -205,7 +205,7 @@ void    IMeCEventDestroy( IMeEvent* pIEvent )
 }
 
 
-IME_EXTERN_C IMeEvent*   IMeEventCreate( uint8 bInitialState , uint8 bReSet )
+IME_EXTERN_C IMeEvent*   IMeEventCreate( uint8_t bInitialState , uint8_t bReSet )
 {
     IMeCEvent* pEvent = (IMeCEvent*)calloc(1,sizeof(IMeCEvent));
     while( pEvent )
@@ -225,7 +225,7 @@ IME_EXTERN_C IMeEvent*   IMeEventCreate( uint8 bInitialState , uint8 bReSet )
             pEvent = NULL;
             break;
         }
-        pthread_mutexattr_settype( &pEvent->mutex_attr , PTHREAD_MUTEX_TIMED_NP );    /* 普通锁 */
+        pthread_mutexattr_settype( &pEvent->mutex_attr , PTHREAD_MUTEX_RECURSIVE_NP );    /* 普通锁 */
         
         if( !pthread_mutex_init( &pEvent->cond_mutex , &pEvent->mutex_attr ) )
         {

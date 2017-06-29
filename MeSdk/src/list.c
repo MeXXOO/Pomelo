@@ -37,10 +37,10 @@ void  list_output_list( list_node_t* head , list_node_t* tail )
 {
     while( head!=tail )  
     {
-        printf( "%d->" , head->data );
+        printf( "%0x->" , (uint32_t)head->data );
         head = head->next; 
     }
-    printf( "%d\n" , tail->data );
+    printf( "%0x\n" , (uint32_t)tail->data );
 }
 
 int IMeCListGetCount( IMeList* list )
@@ -50,63 +50,62 @@ int IMeCListGetCount( IMeList* list )
     return list_t->nNodeCount;
 }
 
-void*   IMeCListGetNext( IMeList* list , lposition* position )
+void*   IMeCListGetNext( IMeList* list , uint32_t* position )
 {
     IMeCList* list_t = (IMeCList*)list;
     list_node_t* node_t = (list_node_t*)*position;
     
-    if( node_t )
+    if( list_t && node_t )
     {
         node_t = node_t->next;
-        *position = (lposition)node_t;
+        *position = (uint32_t)node_t;
         return node_t ? node_t->data : NULL;
     }
 
     return NULL;
 }
 
-void*   IMeCListGetPre( IMeList* list , lposition* position )
+void*   IMeCListGetPre( IMeList* list , uint32_t* position )
 {
     IMeCList* list_t = (IMeCList*)list;
     list_node_t* node_t = (list_node_t*)*position;
    
-    if( node_t )
+    if( list_t && node_t )
     {
         node_t = node_t->pre;
-        *position = (lposition)node_t;
+        *position = (uint32_t)node_t;
         return node_t ? node_t->data : NULL;
     }
 
     return NULL;
 }
 
-void*   IMeCListGetHead( IMeList* list , lposition* position )
+void*   IMeCListGetHead( IMeList* list , uint32_t* position )
 {
     IMeCList*  list_t  =   (IMeCList*)list;
     list_node_t*  node_t  =   (list_node_t*)list_t->headNode;
     
     if( position )
-        *position = (lposition)node_t;
+        *position = (uint32_t)node_t;
 
     return node_t ? node_t->data : NULL;
 }
 
-void*   IMeCListGetTail( IMeList* list , lposition* position )
+void*   IMeCListGetTail( IMeList* list , uint32_t* position )
 {
     IMeCList* list_t = (IMeCList*)list;
     list_node_t* node_t = (list_node_t*)list_t->tailNode;
     
     if( position )
-        *position = (lposition)node_t;
+        *position = (uint32_t)node_t;
 
     return node_t ? node_t->data : NULL;
 }
 
-lposition   IMeCListAddHead( IMeList* list , void* data )
+uint32_t   IMeCListAddHead( IMeList* list , void* data )
 {
     IMeCList*  list_t  =   (IMeCList*)list;
     list_node_t*  new_node_t  =  NULL;
-    lposition position  =  0;
     
     new_node_t = list_node_alloc( list_t->m_pMemory , data );    
     
@@ -124,14 +123,13 @@ lposition   IMeCListAddHead( IMeList* list , void* data )
         list_t->nNodeCount++;
     }
     
-    return (lposition)new_node_t;
+    return (uint32_t)new_node_t;
 }
 
-lposition   IMeCListAddTail( IMeList* list , void* data )
+uint32_t   IMeCListAddTail( IMeList* list , void* data )
 {
     IMeCList*  list_t  =   (IMeCList*)list;
     list_node_t*  new_node_t  =  NULL;
-    lposition position  =  0;
 
     new_node_t   =   list_node_alloc( list_t->m_pMemory , data );   
 
@@ -149,7 +147,7 @@ lposition   IMeCListAddTail( IMeList* list , void* data )
         list_t->nNodeCount++;
     }
 
-    return (lposition)new_node_t;
+    return (uint32_t)new_node_t;
 }
 
 void*   IMeCListRemoveHead( IMeList* list )

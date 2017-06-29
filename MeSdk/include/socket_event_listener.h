@@ -12,7 +12,7 @@ typedef struct _IMeSocketEventListener  IMeSocketEventListener;
 typedef void    (*IMeSocketEventListenerDestroy)( IMeSocketEventListener* pIMeSocketEventListener );
 typedef int     (*IMeSocketEventListenerAdd)( IMeSocketEventListener* pIMeSocketEventListener , IMeSocket* s , short old , short events );
 typedef int     (*IMeSocketEventListenerDel)( IMeSocketEventListener* pIMeSocketEventListener , IMeSocket* s , short old , short events );
-typedef int     (*IMeSocketEventListenerDispatch)( IMeSocketEventListener* pIMeSocketEventListener , uint timeMiliseconds );
+typedef int     (*IMeSocketEventListenerDispatch)( IMeSocketEventListener* pIMeSocketEventListener , uint32_t timeMiliseconds );
 typedef void    (*IMeSocketEventListenerRegister)( IMeSocketEventListener* pIMeSocketEventListener , IMeSocketEventListenerOnNotify notify , void* upApp );
 
 struct _IMeSocketEventListener{

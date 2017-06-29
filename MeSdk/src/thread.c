@@ -65,12 +65,12 @@ typedef struct _IMeCThread
     pthread_t   m_hThread;
 }IMeCThread;
 
-void    IMeCThreadExit( IMeThread* pIThread , uint dwMilliseconds )
+void    IMeCThreadExit( IMeThread* pIThread , uint32_t dwMilliseconds )
 {
     IMeCThread* pThread = (IMeCThread*)pIThread;
-    uint dwExitCode;
+    //uint32_t dwExitCode;
     if( !pThread || !pThread->m_hThread )   return;
-    pthread_joint( pThread->m_hThread , NULL );
+    pthread_join( pThread->m_hThread , NULL );
 }
 
 void    IMeCThreadDestroy( IMeThread* pIThread )

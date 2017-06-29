@@ -1,5 +1,6 @@
 
 /* dummy source file for compatibility purposes */
+#include "config.h"
 
 #if defined(HAVE_CDEFS_H)
 #include <sys/cdefs.h>

@@ -17,7 +17,7 @@ int     IMeCFileOpen( IMeFile* pIFile , char* pFileName , int nOpenFlag )
     
     while( pFile->m_hFile==NULL )
     {
-        unsigned dwOpenAttribute = 0;
+        uint32_t dwOpenAttribute = 0;
         if( nOpenFlag & IMeFile_OpenCreate )
             dwOpenAttribute |= CREATE_ALWAYS;
         else 
@@ -62,7 +62,7 @@ int     IMeCFileIsOpen( IMeFile* pIFile )
     return pFile->m_hFile!=NULL;
 }
 
-uint    IMeCFileRead( IMeFile* pIFile , char* pBuffer , uint nBufferLen )
+uint32_t    IMeCFileRead( IMeFile* pIFile , char* pBuffer , uint32_t nBufferLen )
 {
     IMeCFile* pFile = (IMeCFile*)pIFile;
     int nReadLen = 0;
@@ -78,10 +78,10 @@ uint    IMeCFileRead( IMeFile* pIFile , char* pBuffer , uint nBufferLen )
     return nReadLen;
 }
 
-uint     IMeCFileWrite( IMeFile* pIFile , char* pBuffer , uint nBufferLen )
+uint32_t     IMeCFileWrite( IMeFile* pIFile , char* pBuffer , uint32_t nBufferLen )
 {
     IMeCFile* pFile = (IMeCFile*)pIFile;
-    uint nWriteLen = 0;
+    uint32_t nWriteLen = 0;
 
     if( !pFile || !pBuffer || !nBufferLen || !pFile->m_hFile ) return nWriteLen;
 
@@ -94,13 +94,13 @@ uint     IMeCFileWrite( IMeFile* pIFile , char* pBuffer , uint nBufferLen )
     return nWriteLen;
 }
 
-int     IMeCFileSeek( IMeFile* pIFile , int64 llPos , int nSeekFlag )
+int     IMeCFileSeek( IMeFile* pIFile , int64_t llPos , int nSeekFlag )
 {
     IMeCFile* pFile = (IMeCFile*)pIFile;
 
     int lLoSeekSize = (int)(llPos&0xffffffff);
     int lHiSeekSize = (int)((llPos>>32)&0xffffffff);
-    uint nRes = HFILE_ERROR;
+    uint32_t nRes = HFILE_ERROR;
     
     if( !pFile || !pFile->m_hFile ) return 0;   
     
@@ -125,22 +125,22 @@ int     IMeCFileSeek( IMeFile* pIFile , int64 llPos , int nSeekFlag )
     return nRes!=HFILE_ERROR;
 }
 
-uint64  IMeCFileGetSize( IMeFile* pIFile )
+uint64_t  IMeCFileGetSize( IMeFile* pIFile )
 {
     IMeCFile* pFile = (IMeCFile*)pIFile;
-    uint lLoSize = 0 , lHiSize = 0;
+    uint32_t lLoSize = 0 , lHiSize = 0;
 
     if( !pFile || !pFile->m_hFile )     return 0;
 
     lLoSize = GetFileSize( pFile->m_hFile , &lHiSize );
 
-    return (((uint64)lHiSize)<<32|lLoSize);
+    return (((uint64_t)lHiSize)<<32|lLoSize);
 }
 
-int64  IMeCFileGetPosition( IMeFile* pIFile )
+int64_t  IMeCFileGetPosition( IMeFile* pIFile )
 {
     IMeCFile* pFile = (IMeCFile*)pIFile;
-    uint lPostion = HFILE_ERROR;
+    uint32_t lPostion = HFILE_ERROR;
     
     if( !pFile || !pFile->m_hFile )     return 0;
 
@@ -213,9 +213,9 @@ int  IMeCFileOpen( IMeFile* pIFile , char* pFileName , int nOpenFlag )
 {
     IMeCFile* pFile = (IMeCFile*)pIFile;
     
-    if( !pFile || !pFile->m_hFile || !pFileName || !nOpenFlag ) return;
+    if( !pFile || !pFileName || !nOpenFlag ) return 0;
 
-    while( !pFile->m_hFile )
+    while( -1==pFile->m_hFile )
     {
         int nOpenMode = 0;
         
@@ -236,7 +236,7 @@ int  IMeCFileOpen( IMeFile* pIFile , char* pFileName , int nOpenFlag )
         if( pFile->m_hFile==-1 )
         {
             DebugLogString( TRUE , "[IMeFileOpen] open File %s failed!" , pFileName );
-            pFile->m_hFile = NULL;
+            pFile->m_hFile = -1;
             break;
         }
 
@@ -245,10 +245,12 @@ int  IMeCFileOpen( IMeFile* pIFile , char* pFileName , int nOpenFlag )
         {
             DebugLogString( TRUE , "[IMeFileOpen] copy file name failed!" );
             close( pFile->m_hFile );
-            pFile->m_hFile = NULL;
+            pFile->m_hFile = -1;
         }
         break;
     }
+
+    return pFile->m_hFile != -1;
 }
 
 int  IMeCFileIsOpen( IMeFile* pIFile )
@@ -257,15 +259,15 @@ int  IMeCFileIsOpen( IMeFile* pIFile )
     
     if( !pFile )    return 0;
 
-    return pFile->m_hFile!=0;
+    return pFile->m_hFile!=-1;
 }
 
-uint IMeCFileRead( IMeFile* pIFile , char* pBuffer , uint nBufferLen )
+uint32_t IMeCFileRead( IMeFile* pIFile , char* pBuffer , uint32_t nBufferLen )
 {
     IMeCFile* pFile = (IMeCFile*)pIFile;
-    uint nReadLen = 0;
+    uint32_t nReadLen = 0;
     
-    if( !pFile || !pFile->m_hFile || !pBuffer || !nBufferLen )  return nReadLen;
+    if( !pFile || -1==pFile->m_hFile || !pBuffer || !nBufferLen )  return nReadLen;
     
     nReadLen = read( pFile->m_hFile , (void*)pBuffer , nBufferLen );
     if( nReadLen==-1 )
@@ -277,12 +279,12 @@ uint IMeCFileRead( IMeFile* pIFile , char* pBuffer , uint nBufferLen )
     return nReadLen;
 }
 
-uint IMeCFileWrite( IMeFile* pIFile , char* pBuffer , uint nBufferLen )
+uint32_t IMeCFileWrite( IMeFile* pIFile , char* pBuffer , uint32_t nBufferLen )
 {
     IMeCFile* pFile = (IMeCFile*)pIFile;
-    uint nWriteLen = 0;
+    uint32_t nWriteLen = 0;
     
-    if( !pFile || !pFile->m_hFile || !pBuffer || !nBufferLen )  return nWriteLen;
+    if( !pFile || -1==pFile->m_hFile || !pBuffer || !nBufferLen )  return nWriteLen;
     
     nWriteLen = write( pFile->m_hFile , (void*)pBuffer , nBufferLen );
     if( nWriteLen==-1 )
@@ -294,11 +296,11 @@ uint IMeCFileWrite( IMeFile* pIFile , char* pBuffer , uint nBufferLen )
     return nWriteLen;
 }
 
-int  IMeCFileSeek( IMeFile* pIFile , int64 llPos , int nSeekFlag )
+int  IMeCFileSeek( IMeFile* pIFile , int64_t llPos , int nSeekFlag )
 {
     IMeCFile* pFile = (IMeCFile*)pIFile;
-    int64 nRes = -1;
-    if( !pFile || !pFile->m_hFile )    return 0;
+    int64_t nRes = -1;
+    if( !pFile || -1==pFile->m_hFile )    return 0;
     
     if( nSeekFlag==IMeFile_SeekEnd )
     {
@@ -321,11 +323,11 @@ int  IMeCFileSeek( IMeFile* pIFile , int64 llPos , int nSeekFlag )
     return nRes!=-1;
 }
 
-uint64 IMeCFileGetSize( IMeFile* pIFile )
+uint64_t IMeCFileGetSize( IMeFile* pIFile )
 {
     IMeCFile* pFile = (IMeCFile*)pIFile;
-    int64 llSize = -1;
-    if( !pFile || !pFile->m_hFile )    return 0;
+    int64_t llSize = -1;
+    if( !pFile || -1==pFile->m_hFile )    return 0;
     
     llSize = lseek( pFile->m_hFile, 0, SEEK_END );
     if( llSize==-1 )
@@ -337,11 +339,11 @@ uint64 IMeCFileGetSize( IMeFile* pIFile )
     return llSize;
 }
 
-int64 IMeCFileGetPosition( IMeFile* pIFile )
+int64_t IMeCFileGetPosition( IMeFile* pIFile )
 {
     IMeCFile* pFile = (IMeCFile*)pIFile;
-    int64 llPos = -1;
-    if( !pFile || !pFile->m_hFile )    return 0;
+    int64_t llPos = -1;
+    if( !pFile || -1==pFile->m_hFile )    return 0;
     
     llPos = lseek( pFile->m_hFile, 0, SEEK_CUR );
     if( llPos==-1 )
@@ -356,7 +358,7 @@ int64 IMeCFileGetPosition( IMeFile* pIFile )
 void IMeCFileClose( IMeFile* pIFile )
 {
     IMeCFile* pFile = (IMeCFile*)pIFile;
-    if( !pFile || !pFile->m_hFile )    return;
+    if( !pFile || -1==pFile->m_hFile )    return;
     close( pFile->m_hFile );
     pFile->m_hFile = 0;
     free( pFile->m_pFileName );

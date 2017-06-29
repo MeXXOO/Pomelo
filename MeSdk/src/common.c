@@ -102,8 +102,7 @@ IME_EXTERN_C int	IMeFileIsDir( const char* pPath )
 		return 0;
 }
 
-/* 获取可用磁盘空间大小 */
-IME_EXTERN_C uint64 IMeGetHardDiskSize( const char* szDiskPath )
+IME_EXTERN_C uint64_t IMeGetHardDiskSize( const char* szDiskPath )
 {   
     ULARGE_INTEGER lpuse;   
     ULARGE_INTEGER lptotal;   
@@ -118,16 +117,15 @@ IME_EXTERN_C uint64 IMeGetHardDiskSize( const char* szDiskPath )
     return lpfree.QuadPart>>20;  /* MB */
 }
 
-/* 获取文件大小 */
-IME_EXTERN_C uint64  IMeGetFileSize( const char* pFilePathName )
+IME_EXTERN_C uint64_t  IMeGetFileSize( const char* pFilePathName )
 {
-	uint64 llSize = 0;
+	uint64_t llSize = 0;
 
 	HANDLE handle = CreateFile( pFilePathName, FILE_READ_EA, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0 );
     if( handle != INVALID_HANDLE_VALUE )
     {
-		uint highSize = 0;
-        uint lowSize = GetFileSize( handle, &highSize );
+		uint32_t highSize = 0;
+        uint32_t lowSize = GetFileSize( handle, &highSize );
 		llSize = (uint64)highSize<<32|lowSize;
         CloseHandle(handle);
     }
@@ -135,12 +133,11 @@ IME_EXTERN_C uint64  IMeGetFileSize( const char* pFilePathName )
 	return llSize;
 }
 
-/* 获取一个文件目录的大小 */
-IME_EXTERN_C uint64 IMeGetFileDirSize( const char* szFileDir )
+IME_EXTERN_C uint64_t IMeGetFileDirSize( const char* szFileDir )
 {
-    char szFilePath[MAX_PATH] = { 0 };
-    char szFileFilter[MAX_PATH] = { 0 };
-    uint64 llSize = 0;
+    char szFilePath[256] = { 0 };
+    char szFileFilter[256] = { 0 };
+    uint64_t llSize = 0;
     WIN32_FIND_DATA fileinfo;
     HANDLE hFind = NULL; 
 
@@ -159,14 +156,14 @@ IME_EXTERN_C uint64 IMeGetFileDirSize( const char* szFileDir )
             && strcmp(fileinfo.cFileName,".") 
             && strcmp(fileinfo.cFileName,"..") )
         {
-            char szSubPath[MAX_PATH] = { 0 };
+            char szSubPath[256] = { 0 };
             strcpy( szSubPath , szFilePath );
             strcat( szSubPath , fileinfo.cFileName );
             llSize = llSize + IMeGetFileDirSize(szSubPath);
         }
         else
         {
-            llSize = llSize + (((uint64)fileinfo.nFileSizeHigh)<<32|fileinfo.nFileSizeLow);
+            llSize = llSize + (((uint64_t)fileinfo.nFileSizeHigh)<<32|fileinfo.nFileSizeLow);
         }
     }while(FindNextFile(hFind,&fileinfo));
 
@@ -174,11 +171,11 @@ IME_EXTERN_C uint64 IMeGetFileDirSize( const char* szFileDir )
     return llSize;
 }
 
-/* 搜索主目录下的子目录名列表 */
+
 IME_EXTERN_C void   IMeGetSubDirList( const char* szMainDir , IMeArray* arrSubDir )
 {
-    char szFilePath[MAX_PATH] = { 0 };
-    char szFileFilter[MAX_PATH] = { 0 };
+    char szFilePath[256] = { 0 };
+    char szFileFilter[256] = { 0 };
     WIN32_FIND_DATA fileinfo;
     HANDLE hFind = NULL;
 
@@ -209,8 +206,8 @@ IME_EXTERN_C void   IMeGetSubDirList( const char* szMainDir , IMeArray* arrSubDi
 
 IME_EXTERN_C void	 IMeGetSubDirFileList( const char* szMainDir , IMeArray* arrSubDirFile , byte bIncludePath )
 {
-    char szFilePath[MAX_PATH] = { 0 };
-    char szFileFilter[MAX_PATH] = { 0 };
+    char szFilePath[256] = { 0 };
+    char szFileFilter[256] = { 0 };
     
     WIN32_FIND_DATA fileinfo;
     HANDLE hFind = NULL;
@@ -227,7 +224,7 @@ IME_EXTERN_C void	 IMeGetSubDirFileList( const char* szMainDir , IMeArray* arrSu
     
     hFind = FindFirstFile( szFileFilter, &fileinfo );
     do{
-		char szSubPath[MAX_PATH] = { 0 };
+		char szSubPath[256] = { 0 };
 		
 		strcpy( szSubPath , szFilePath );
 		strcat( szSubPath , fileinfo.cFileName );
@@ -253,8 +250,8 @@ IME_EXTERN_C void	 IMeGetSubDirFileList( const char* szMainDir , IMeArray* arrSu
 
 IME_EXTERN_C void    IMeCopyDirFile( const char* szSrcDir , const char* szDstDir )
 {
-    char szFilePath[MAX_PATH] = { 0 };
-    char szFileFilter[MAX_PATH] = { 0 };
+    char szFilePath[256] = { 0 };
+    char szFileFilter[256] = { 0 };
     WIN32_FIND_DATA fileinfo;
     HANDLE hFind = NULL;
 
@@ -271,8 +268,8 @@ IME_EXTERN_C void    IMeCopyDirFile( const char* szSrcDir , const char* szDstDir
         /* skip . & .. dir */
         if( !(fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) )
         {
-            char szDstFileName[MAX_PATH] = { 0 };
-            char szSrcFileName[MAX_PATH] = { 0 };
+            char szDstFileName[256] = { 0 };
+            char szSrcFileName[256] = { 0 };
             sprintf( szDstFileName , "%s%s" , szDstDir , fileinfo.cFileName );
             sprintf( szSrcFileName , "%s%s" , szSrcDir , fileinfo.cFileName );
             //DebugLogString( TRUE , "[IMeCopyDirFile] szSrcFileName = %s , szDstFileName = %s\n" , szSrcFileName , szDstFileName );
@@ -289,30 +286,24 @@ IME_EXTERN_C void    IMeCopyFile( const char* pSrcFile , const char* pDstFile )
     CopyFile( pSrcFile , pDstFile , FALSE );
 }
 
-/* 通过进程名或是进程ID杀进程 */
-IME_EXTERN_C int IMeKillProcess( const char* szProcessName , uint dwPID )    
+
+IME_EXTERN_C int IMeKillProcess( const char* szProcessName , uint32_t dwPID )    
 {
-    /* 创建进程快照(TH32CS_SNAPPROCESS表示创建所有进程的快照) */  
     HANDLE hSnapShot = CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );  
-    /* PROCESSENTRY32进程快照的结构体 */
     PROCESSENTRY32 pe;  
-    /* 实例化后使用Process32First获取第一个快照的进程前必做的初始化操作 */
     pe.dwSize = sizeof(PROCESSENTRY32);  
     if( !Process32First(hSnapShot,&pe) )  
     {  
         return 0;  
     }  
 
-    /* 如果句柄有效 则一直获取下一个句柄循环下去 */
     while( Process32Next(hSnapShot,&pe) )  
     {  
-        char szExeName[MAX_PATH] = { 0 };
+        char szExeName[256] = { 0 };
         sprintf( szExeName, "%s", pe.szExeFile );
         
-        /* 与当前传入的文件名相同或与当前进程的ID相同 */
         if( !stricmp(szExeName , szProcessName) || (dwPID==pe.th32ProcessID && dwPID!=0) )  
         {  
-            //从快照进程中获取该进程的PID(即任务管理器中的PID)  
             DWORD dwProcessID = pe.th32ProcessID;  
             HANDLE hProcess = OpenProcess(PROCESS_TERMINATE,FALSE,dwProcessID);  
             TerminateProcess(hProcess,0);  
@@ -323,20 +314,18 @@ IME_EXTERN_C int IMeKillProcess( const char* szProcessName , uint dwPID )
     return 1;  
 }
 
-/* 重启系统 */
 IME_EXTERN_C void    IMeRestartSystem()                                                    
 {
-    char szShellCmd[MAX_PATH] = { 0 };
+    char szShellCmd[256] = { 0 };
 
     sprintf( szShellCmd , "shutdown /r /f /t 0" );
     
     system( szShellCmd );
 }
 
-/* 系统关机 */
 IME_EXTERN_C void    IMePowerOffSystem()                                                   
 {
-    char szShellCmd[MAX_PATH] = { 0 };
+    char szShellCmd[256] = { 0 };
     
     sprintf( szShellCmd , "shutdown /s /f /t 0" );
     
@@ -368,7 +357,7 @@ IME_EXTERN_C void    IMeCreateGUID( char* szGuid )
     RpcStringFree((uchar**)&pszGuid);
 }
 
-IME_EXTERN_C uint    IMeGetCurrentTime()
+IME_EXTERN_C uint32_t    IMeGetCurrentTime()
 {
     return timeGetTime();
 }
@@ -381,22 +370,21 @@ IME_EXTERN_C void    IMeSleep( uint dwMiliseconds )
 #elif       PROJECT_FOR_LINUX   //////////////////////////////////////////////////////////////////////////
 
 IME_EXTERN_C int	IMeFileIsDir( const char* pPath )
-{  
+{   
     struct stat S_stat;  
     
-    /* 取得文件状态 */
-    if( lstat(pszName, &S_stat)<0 )  
+    if( lstat(pPath, &S_stat)<0 )  
     {  
-        return -1;  
+        return FALSE;  
     }  
     
     if( S_ISDIR(S_stat.st_mode) )  
     {  
-        return 1;  
+        return TRUE;  
     }  
     else  
     {  
-        return 0;  
+        return FALSE;  
     }  
 }  
 
@@ -410,14 +398,15 @@ IME_EXTERN_C void    IMeCopyFile( const char* pSrcFile , const char* pDstFile )
     }
 }
 
-IME_EXTERN_C uint64  IMeGetFileSize( const char* pFilePathName )
+IME_EXTERN_C uint64_t  IMeGetFileSize( const char* pFilePathName )
 {
 	int fd = 0;
 	FILE* pFile = NULL;
 
-	uint64 llSize = 0;
+	uint64_t llSize = 0;
+    struct stat64 filestat;
 
-	pFile = fopen( szSubPath, "r" );
+	pFile = fopen( pFilePathName, "r" );
 	if( pFile && (fd = fileno( pFile )) )
 	{
 		fstat( fd , &filestat );
@@ -428,9 +417,9 @@ IME_EXTERN_C uint64  IMeGetFileSize( const char* pFilePathName )
 	return llSize;
 }
 
-IME_EXTERN_C uint64 IMeGetFileDirSize( const char* szFileDir )  
+IME_EXTERN_C uint64_t IMeGetFileDirSize( const char* szFileDir )  
 {  
-    char szFilePath[MAX_PATH] = { 0 };
+    char szFilePath[256] = { 0 };
     strcpy( szFilePath , szFileDir );
     
     if( szFilePath[strlen(szFilePath)-1] != '/' )
@@ -439,23 +428,31 @@ IME_EXTERN_C uint64 IMeGetFileDirSize( const char* szFileDir )
     DIR* pDir = opendir(szFilePath);
     if( pDir == NULL )  return 0;  
 
-    uint64 llSize = 0;
+    uint64_t llSize = 0;
     struct dirent *pFileInfo;  
-    struct stat filestat;          /* linux文件详细信息结构定义 */
+    struct stat64 filestat;          
     while( (pFileInfo=readdir(pDir)) != NULL )  
     {  
-        char szSubPath[MAX_PATH] = { 0 };
+        char szSubPath[256] = { 0 };
         strcpy( szSubPath , szFilePath );
         strcat( szSubPath , pFileInfo->d_name );
-        if( IMeFileIsDir(szSubPath) == 1
+        if( IMeFileIsDir(szSubPath)
             && strcmp(pFileInfo->d_name, ".") 
-            && strcmp(pFileInfo->d_name, ".."))  
+            && strcmp(pFileInfo->d_name, "..") )  
         {  
-            llSize = llSize + IMeGetFileDirSize(szSubPath);              
+            llSize = llSize + IMeGetFileDirSize(szSubPath);    
         }  
-        else
+        else if( strcmp(pFileInfo->d_name, ".") 
+            && strcmp(pFileInfo->d_name, "..") )
         {
-			llSize += IMeGetFileSize( szSubPath );
+            int fd = -1;
+            FILE* pFile = fopen( szSubPath, "r" );
+            if( pFile && (fd = fileno( pFile )) )
+            {
+                fstat64( fd , &filestat );
+                llSize += filestat.st_size;
+                fclose(pFile);
+            }
         }
     }  
     
@@ -466,7 +463,7 @@ IME_EXTERN_C uint64 IMeGetFileDirSize( const char* szFileDir )
 
 IME_EXTERN_C void  IMeGetSubDirList( const char* szMainDir , IMeArray* arrSubDir ) 
 {  
-    char szFilePath[MAX_PATH] = { 0 };
+    char szFilePath[256] = { 0 };
     strcpy( szFilePath , szMainDir );
     
     if( szFilePath[strlen(szFilePath)-1] != '/' )
@@ -478,23 +475,23 @@ IME_EXTERN_C void  IMeGetSubDirList( const char* szMainDir , IMeArray* arrSubDir
     struct dirent *pFileInfo;  
     while( (pFileInfo=readdir(pDir)) != NULL )  
     {  
-        char szSubPath[MAX_PATH] = { 0 };
+        char szSubPath[256] = { 0 };
         strcpy( szSubPath , szFilePath );
         strcat( szSubPath , pFileInfo->d_name );
-        if( IMeFileIsDir(szSubPath)==1
+        if( IMeFileIsDir(szSubPath)==TRUE
             && strcmp(pFileInfo->d_name, ".") 
             && strcmp(pFileInfo->d_name, ".."))  
         {  
-            CArrayAdd( arrSubDir , IMeCopyString(pFileInfo->d_name) );
+            CArrayAdd( arrSubDir , IMeCopyString(pFileInfo->d_name) , 0 );
         }  
     }  
     closedir(pDir);  
 }  
 
 
-IME_EXTERN_C void	 IMeGetSubDirFileList( const char* szMainDir , IMeArray* arrSubDirFile , byte bIncludePath )
+IME_EXTERN_C void	 IMeGetSubDirFileList( const char* szMainDir , IMeArray* arrSubDirFile , uint8_t bIncludePath )
 {
-    char szFilePath[MAX_PATH] = { 0 };
+    char szFilePath[256] = { 0 };
     strcpy( szFilePath , szMainDir );
     
     if( szFilePath[strlen(szFilePath)-1] != '/' )
@@ -504,10 +501,9 @@ IME_EXTERN_C void	 IMeGetSubDirFileList( const char* szMainDir , IMeArray* arrSu
     if( pDir == NULL )  return;  
 
     struct dirent *pFileInfo;  
-    struct stat filestat;          /* linux文件详细信息结构定义 */
     while( (pFileInfo=readdir(pDir)) != NULL )  
     {  
-        char szSubPath[MAX_PATH] = { 0 };
+        char szSubPath[256] = { 0 };
         
 		strcpy( szSubPath , szFilePath );
         strcat( szSubPath , pFileInfo->d_name );
@@ -521,9 +517,9 @@ IME_EXTERN_C void	 IMeGetSubDirFileList( const char* szMainDir , IMeArray* arrSu
         else
         {
 			if( bIncludePath )
-				CArrayAdd( arrSubDirFile , strdup(szSubPath) );
+				CArrayAdd( arrSubDirFile , strdup(szSubPath) , 0 );
 			else
-				CArrayAdd( arrSubDirFile , strdup(pFileInfo->d_name) );
+				CArrayAdd( arrSubDirFile , strdup(pFileInfo->d_name) , 0 );
         }
     }  
     
@@ -544,7 +540,7 @@ IME_EXTERN_C void    IMeCopyDirFile( const char* szSrcDir , const char* szDstDir
     struct dirent *pFileInfo;  
     while( (pFileInfo=readdir(pDir)) != NULL )  
     {  
-        if( !IsDirectory(pFileInfo->d_name) )
+        if( !IMeFileIsDir(pFileInfo->d_name) )
         {
             char szDstFileName[256] = { 0 };
             char szSrcFileName[256] = { 0 };
@@ -559,6 +555,8 @@ IME_EXTERN_C void    IMeCopyDirFile( const char* szSrcDir , const char* szDstDir
 /* create guid in linux os */
 IME_EXTERN_C void    IMeCreateGUID( char* szGuid )
 {
+
+#ifndef  PROJECT_FOR_ANDROID
     if( !szGuid )   return;
     
     uuid_t uuid;
@@ -575,74 +573,78 @@ IME_EXTERN_C void    IMeCreateGUID( char* szGuid )
         }
         i++;
     }
+#endif
+
 }
 
 
-IME_EXTERN_C uint64 IMeGetHardDiskSize( const char* szDiskPath )
+IME_EXTERN_C uint64_t IMeGetHardDiskSize( const char* szDiskPath )
 {   
+
+#ifndef  PROJECT_FOR_ANDROID
     struct statfs diskInfo; 
       
     statfs( szDiskPath , &diskInfo ); 
-    unsigned long long blocksize = diskInfo.f_bsize; //每个block里包含的字节数 
-    unsigned long long totalsize = blocksize * diskInfo.f_blocks; //总的字节数，f_blocks为block的数目 
+    uint64_t blocksize = diskInfo.f_bsize;
+    uint64_t totalsize = blocksize * diskInfo.f_blocks;
 //     printf("Total_size = %llu B = %llu KB = %llu MB = %llu GB\n", 
 //         totalsize, totalsize>>10, totalsize>>20, totalsize>>30); 
       
-    unsigned long long freeDisk = diskInfo.f_bfree * blocksize; //剩余空间的大小 
-    unsigned long long availableDisk = diskInfo.f_bavail * blocksize; //可用空间大小 
+    uint64_t freeDisk = diskInfo.f_bfree * blocksize; 
+    uint64_t availableDisk = diskInfo.f_bavail * blocksize; 
 //     printf("Disk_free = %llu MB = %llu GB\nDisk_available = %llu MB = %llu GB\n", 
 //         freeDisk>>20, freeDisk>>30, availableDisk>>20, availableDisk>>30); 
     
     return availableDisk>>20; 
+#endif
+
+    return 0;
 }
 
-/* 通过进程名或是进程ID杀进程 */
-IME_EXTERN_C int IMeKillProcess( const char* szProcessName , uint dwPID )    
+IME_EXTERN_C int IMeKillProcess( const char* szProcessName , uint32_t dwPID )    
 {
-    char szShellCmd[MAX_PATH] = { 0 };
+    char szShellCmd[256] = { 0 };
 
-    if( !strlen(szProcessName) )
+    if( szProcessName && !strlen(szProcessName) )
     {
-        sprintf( szProcessName , "killall %s" , szProcessName );
-        system( szProcessName );
+        sprintf( szShellCmd , "killall %s" , szProcessName );
+        system( szShellCmd );
     }
     else if( dwPID != 0 )
     {
-        sprintf( szProcessName , "kill -9 %u" , dwPID );
-        system( szProcessName );
+        sprintf( szShellCmd , "kill -9 %u" , dwPID );
+        system( szShellCmd );
     }
 
     return 1;
 }
 
-/* 重启系统 */
 IME_EXTERN_C void    IMeRestartSystem()                                                    
 {
-    char szShellCmd[MAX_PATH] = { 0 };
+    char szShellCmd[256] = { 0 };
     sprintf( szShellCmd , "init 6" );
 
     system( szShellCmd );
 }
 
-/* 系统关机 */
 IME_EXTERN_C void    IMePowerOffSystem()                                                   
 {
-    char szShellCmd[MAX_PATH] = { 0 };
+    char szShellCmd[256] = { 0 };
     sprintf( szShellCmd , "init 0" );
 
     system( szShellCmd );
 }
 
-IME_EXTERN_C uint    IMeGetCurrentTime()
+IME_EXTERN_C uint32_t    IMeGetCurrentTime()
 {
-    unsigned int uptime = 0;  
+    uint32_t uptime = 0;  
     struct timespec on;  
     if( clock_gettime(CLOCK_MONOTONIC, &on) == 0 )  
         uptime = on.tv_sec*1000 + on.tv_nsec/1000000;  
     return uptime;  
 }
 
-IME_EXTERN_C void    IMeSleep( uint dwMiliseconds )
+IME_EXTERN_C void    IMeSleep( uint32_t dwMiliseconds )
 {
     usleep( dwMiliseconds*1000 );
 }

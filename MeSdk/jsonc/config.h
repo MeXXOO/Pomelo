@@ -8,6 +8,8 @@
 /* Define if .gnu.warning accepts long strings. */
 /* #undef HAS_GNU_WARNING_LONG */
 
+#define HAVE_CDEFS_H       1
+
 /* Define to 1 if you have the declaration of `INFINITY', and to 0 if you
    don't. */
 #define HAVE_DECL_INFINITY 0

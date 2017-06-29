@@ -3,7 +3,7 @@
 
 typedef struct _IMeSocketTcp    IMeSocketTcp;
 
-typedef uint8   (*IMeSocketTcpConnect)( IMeSocketTcp* pISocketTcp  , char* serverAddr , ushort serverPort );
+typedef uint8_t (*IMeSocketTcpConnect)( IMeSocketTcp* pISocketTcp  , char* serverAddr , uint16_t serverPort );
 typedef int     (*IMeSocketTcpSend)( IMeSocketTcp* pISocketTcp , char* lpData , int nLen );
 typedef void    (*IMeSocketTcpDestroy)( IMeSocketTcp* pISocketTcp );
 typedef void    (*IMeSocketTcpSetOpt)( IMeSocketTcp* pISocketTcp, int opt, int optValue );

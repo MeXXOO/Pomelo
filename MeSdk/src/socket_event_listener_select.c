@@ -35,8 +35,8 @@
 #define XFREE(ptr) do { if (ptr) free(ptr); } while (0)
 
 struct win_fd_set {
-    u_int fd_count;					/* how many are SET? */
-    SOCKET  fd_array[FD_SETSIZE];   /* an array of SOCKETs */
+    uint32_t fd_count;					/* how many are SET? */
+    int  fd_array[FD_SETSIZE];   		/* an array of SOCKETs */
 	IMeSocket* socket_array[FD_SETSIZE];
 };
 
@@ -174,7 +174,7 @@ int	win32_add(IMeSocketEventSelectListener* pSelectListener, IMeSocket* s, short
 {
 	struct win32op *win32op = pSelectListener->op;
 	struct idx_info *idx = (struct idx_info *)CSocketGetEventParameter(s);
-	uint8 bfree = FALSE;
+	uint8_t bfree = FALSE;
 
 	if (!(events & (SEvent_Read|SEvent_Write)))
 	{
@@ -212,7 +212,7 @@ int	win32_add(IMeSocketEventSelectListener* pSelectListener, IMeSocket* s, short
 	}
 	
 	//save index info
-	CSocketSetEventParameter(s,(uint)idx);
+	CSocketSetEventParameter(s,(uint32_t)idx);
 
 	return (0);
 }
@@ -237,7 +237,7 @@ int		win32_del(IMeSocketEventSelectListener* pSelectListener, IMeSocket* s, shor
 	if( idx->read_pos_plus1==0 && idx->write_pos_plus1==0 )
 	{
 		free(idx);
-		CSocketSetEventParameter(s,(uint)NULL);	
+		CSocketSetEventParameter(s,(uint32_t)NULL);	
 		return 1;
 	}
 
@@ -323,7 +323,7 @@ int	win32_dispatch( IMeSocketEventSelectListener* pSelectListener, struct timeva
 void	win32_dealloc(IMeSocketEventSelectListener* pSelectListener)
 {
 	struct win32op *win32op = pSelectListener->op;
-	uint i;
+	uint32_t i;
 	IMeSocket* s;
 	struct idx_info* idx;
 
@@ -337,7 +337,7 @@ void	win32_dealloc(IMeSocketEventSelectListener* pSelectListener)
 			if(idx)
 			{
 				free(idx);
-				CSocketSetEventParameter(s,(uint)NULL);
+				CSocketSetEventParameter(s,(uint32_t)NULL);
 			}	
 		}
 		free(win32op->readset_in);
@@ -352,7 +352,7 @@ void	win32_dealloc(IMeSocketEventSelectListener* pSelectListener)
 			if(idx)
 			{
 				free(idx);
-				CSocketSetEventParameter(s,(uint)NULL);
+				CSocketSetEventParameter(s,(uint32_t)NULL);
 			}	
 		}
 		free(win32op->writeset_in);
@@ -402,7 +402,7 @@ int    IMeSocketEventSelectListenerDel( IMeSocketEventListener* pIMeSocketEventL
 	return -1;
 }
 
-int     IMeSocketEventSelectListenerDispatch( IMeSocketEventListener* pIMeSocketEventListener , uint timeMiliseconds )
+int     IMeSocketEventSelectListenerDispatch( IMeSocketEventListener* pIMeSocketEventListener , uint32_t timeMiliseconds )
 {
     IMeSocketEventSelectListener* pSelectListener = (IMeSocketEventSelectListener*)pIMeSocketEventListener;
     if( pSelectListener )
@@ -484,33 +484,36 @@ struct selectop {
 	int event_fdsz;
 	int event_socketsz;
 	int resize_out_sets;
-	linux_fd_set *event_readset_in;
-	linux_fd_set *event_writeset_in;
-	linux_fd_set *event_readset_out;
-	linux_fd_set *event_writeset_out;
+	struct linux_fd_set *event_readset_in;
+	struct linux_fd_set *event_writeset_in;
+	struct linux_fd_set *event_readset_out;
+	struct linux_fd_set *event_writeset_out;
 };
 
 typedef struct _IMeSocketEventSelectListener {
     IMeSocketEventListener  interfacefunction;
-    selectop* sop;
+    struct selectop* sop;
 
+	IMeSocketEventListenerOnNotify	evNotify;
+	void* upApp;
 }IMeSocketEventSelectListener;
 
 
 static int select_resize(struct selectop *sop, int fdsz);
 static void select_free_selectop(struct selectop *sop);
 
-static void*	select_init(IMeSocketEventSelectListener* pSelectListener)
+static void*	select_init()
 {
 	struct selectop *sop;
 
-	if (!(sop = calloc(1, sizeof(struct selectop))))
+	if(!(sop = calloc(1, sizeof(struct selectop))))
 	{
 		DebugLogString( TRUE , "[select_init] calloc failed!!" );
 		return (NULL);
 	}
 
-	if (select_resize(sop, SELECT_ALLOC_SIZE(32 + 1))) {
+	if (select_resize(sop, SELECT_ALLOC_SIZE(32 + 1))) 
+	{
 		select_free_selectop(sop);
 		DebugLogString( TRUE , "[select_init] select_resize failed!!" );
 		return (NULL);
@@ -519,86 +522,70 @@ static void*	select_init(IMeSocketEventSelectListener* pSelectListener)
 	return (sop);
 }
 
-#ifdef CHECK_INVARIANTS
-static void
-check_selectop(struct selectop *sop)
-{
-	/* nothing to be done here */
-}
-#else
-#define check_selectop(sop) do { (void) sop; } while (0)
-#endif
 
 static int	select_dispatch(IMeSocketEventSelectListener* pSelectListener, struct timeval *tv)
 {
-	int res=0, i, j, nfds;
+	int res=0, i, nfds;
 	struct selectop *sop = pSelectListener->sop;
 
 	if( !pSelectListener->evNotify )	return -1;
 
-	check_selectop(sop);
-	if (sop->resize_out_sets) {
-		fd_set *readset_out=NULL, *writeset_out=NULL;
-		size_t sz = sop->event_fdsz + sop->event_socketsz;
+	if( sop->resize_out_sets ) 
+	{
+		struct linux_fd_set *readset_out=NULL;
+		struct linux_fd_set *writeset_out=NULL;
+		
+		size_t sz = sop->event_fdsz;
+
 		if (!(readset_out = realloc(sop->event_readset_out, sz)))
 			return (-1);
 		sop->event_readset_out = readset_out;
-		if (!(writeset_out = realloc(sop->event_writeset_out, sz))) {
-			/* We don't free readset_out here, since it was
-			 * already successfully reallocated. The next time
-			 * we call select_dispatch, the realloc will be a
-			 * no-op. */
+
+		if (!(writeset_out = realloc(sop->event_writeset_out, sz))) 
 			return (-1);
-		}
 		sop->event_writeset_out = writeset_out;
+
 		sop->resize_out_sets = 0;
 	}
 
-	memcpy(sop->event_readset_out, sop->event_readset_in, sop->event_fdsz + sop->event_socketsz);
-	memcpy(sop->event_writeset_out, sop->event_writeset_in, sop->event_fdsz + sop->event_socketsz);
+	memcpy(sop->event_readset_out, sop->event_readset_in, sop->event_fdsz);
+	memcpy(sop->event_writeset_out, sop->event_writeset_in, sop->event_fdsz);
 
 	nfds = sop->event_fds+1;
 
-	//EVBASE_RELEASE_LOCK(base, th_base_lock);
+	res = select(nfds, (fd_set*)sop->event_readset_out, (fd_set*)sop->event_writeset_out, NULL, tv);
 
-	res = select(nfds, sop->event_readset_out, sop->event_writeset_out, NULL, tv);
+	if( res <=0 )
+	{
+		//DebugLogString( TRUE , "[select_dispatch]: select error %s", IMeSocketConvertErrorCodeToString(IMeSocketGetNetError()) );
+		return res;
+	}
 
-	//EVBASE_ACQUIRE_LOCK(base, th_base_lock);
-
-	check_selectop(sop);
-
-	if (res == -1) {
-		if (errno != EINTR) {
-			DebugLogString( TRUE , "[select_dispatch] select exception!!");
-			return (-1);
+	for( i = 0; i < nfds; ++i ) 
+	{
+		if( FD_ISSET(i, (fd_set*)sop->event_readset_out) )
+		{
+			char* pArrayReadSocket = (char*)sop->event_readset_in + sop->event_fdsz;
+			IMeSocket* s = (IMeSocket*)(*(uint32_t*)&pArrayReadSocket[i*sizeof(IMeSocket*)]);
+			pSelectListener->evNotify( SEvent_Read , s , pSelectListener->upApp );
 		}
 
-		return (0);
+		if( FD_ISSET(i, (fd_set*)sop->event_writeset_out) )
+		{
+			char* pArrayWriteSocket = (char*)sop->event_writeset_in + sop->event_fdsz;
+			IMeSocket* s = (IMeSocket*)(*(uint32_t*)&pArrayWriteSocket[i*sizeof(IMeSocket*)]);
+			pSelectListener->evNotify( SEvent_Write , s , pSelectListener->upApp );
+		}
 	}
-
-	check_selectop(sop);
-	i = random() % nfds;
-	for (j = 0; j < nfds; ++j) {
-		if (++i >= nfds)
-			i = 0;
-		if (FD_ISSET(i, (fd_set*)sop->event_readset_out))
-			pSelectListener->evNotify( SEvent_Read , sop->event_readset_out->socket_array[i] , pSelectListener->upApp );
-		if (FD_ISSET(i, (fd_set*)sop->event_writeset_out))
-			pSelectListener->evNotify( SEvent_Write , sop->event_writeset_out->socket_array[i] , pSelectListener->upApp );
-	}
-	check_selectop(sop);
 
 	return (0);
 }
 
 static int	select_resize(struct selectop *sop, int fdsz)
 {
-	fd_set *readset_in = NULL;
-	fd_set *writeset_in = NULL;
-	int socket_sz = SOCKET_ALLOC_SIZE(fdsz*8);
-
-	if (sop->event_readset_in)
-		check_selectop(sop);
+	struct linux_fd_set *readset_in = NULL;
+	struct linux_fd_set *writeset_in = NULL;
+	int socket_sz = SOCKET_ALLOC_SIZE(fdsz*8); //each byte can set 8 raw sockets, so multiply 8
 
 	if ((readset_in = realloc(sop->event_readset_in, fdsz+socket_sz)) == NULL)
 		goto error;
@@ -617,6 +604,10 @@ static int	select_resize(struct selectop *sop, int fdsz)
 
 	sop->resize_out_sets = 1;
 
+	//first socket_array copy
+	memcpy( (char *)sop->event_readset_in + sop->event_fdsz, (char*)sop->event_readset_in + fdsz, sop->event_socketsz );
+	memcpy( (char *)sop->event_writeset_in + sop->event_fdsz, (char*)sop->event_writeset_in + fdsz, sop->event_socketsz );
+
 	//fd_set init
 	memset((char *)sop->event_readset_in + sop->event_fdsz, 0, fdsz - sop->event_fdsz);
 	memset((char *)sop->event_writeset_in + sop->event_fdsz, 0, fdsz - sop->event_fdsz);
@@ -627,7 +618,6 @@ static int	select_resize(struct selectop *sop, int fdsz)
 
 	sop->event_fdsz = fdsz;
 	sop->event_socketsz = socket_sz;
-	check_selectop(sop);
 
 	return (0);
 
@@ -637,38 +627,38 @@ static int	select_resize(struct selectop *sop, int fdsz)
 }
 
 
-static int	select_add(IMeSocketEventSelectListener* pSelectListener, IMeSocket* s, short old, short events, void *p)
+static int	select_add(IMeSocketEventSelectListener* pSelectListener, IMeSocket* s, short old, short events)
 {
 	struct selectop *sop = pSelectListener->sop;
-	(void) p;
-	fd = CSocketGetFd(s);
+	int fd = CSocketGetFd(s);
 
-    if( events&SEvent_Signal )
+    if( !(events&(SEvent_Read|SEvent_Write)) )
 	{
 		DebugLogString( TRUE , "[select_add] no support signal event!!" );
 		return -1;
 	}
 
-	check_selectop(sop);
 	/*
 	 * Keep track of the highest fd, so that we can calculate the size
 	 * of the fd_sets for select(2)
 	 */
-	if (sop->event_fds < fd) {
-		int fdsz = sop->event_fdsz-SOCKET_ALLOC_SIZE();
+	if( sop->event_fds < fd ) 
+	{
+		int fdsz = sop->event_fdsz;
 
-		if (fdsz < (int)sizeof(fd_mask))
+		if( fdsz < (int)sizeof(fd_mask) )
 			fdsz = (int)sizeof(fd_mask);
 
 		/* In theory we should worry about overflow here.  In
 		 * reality, though, the highest fd on a unixy system will
 		 * not overflow here. XXXX */
-		while (fdsz < (int) SELECT_ALLOC_SIZE(fd + 1))
+		while( fdsz < (int)SELECT_ALLOC_SIZE(fd + 1) )
 			fdsz *= 2;
 
-		if (fdsz != sop->event_fdsz) {
-			if (select_resize(sop, fdsz)) {
-				check_selectop(sop);
+		if( fdsz != sop->event_fdsz ) 
+		{
+			if( select_resize(sop, fdsz) ) 
+			{
 				DebugLogString( TRUE , "[select_add] select resize failed!!" );
 				return (-1);
 			}
@@ -679,17 +669,17 @@ static int	select_add(IMeSocketEventSelectListener* pSelectListener, IMeSocket* 
 
 	if (events & SEvent_Read)
 	{
-		sop->event_readset_in->socket_array[fd] = s;
+		char* pArrayReadSocket = (char*)sop->event_readset_in + sop->event_fdsz;
+		*(uint32_t*)&pArrayReadSocket[fd*sizeof(IMeSocket*)] = (uint32_t)s;
 		FD_SET(fd, (fd_set*)sop->event_readset_in);
 	}
 
 	if (events & SEvent_Write)
 	{
-		sop->event_writeset_in->socket_array[fd] = s;
+		char* pArrayWriteSocket = (char*)sop->event_writeset_in + sop->event_fdsz;
+		*(uint32_t*)&pArrayWriteSocket[fd*sizeof(IMeSocket*)] = (uint32_t)s;
 		FD_SET(fd, (fd_set*)sop->event_writeset_in);
 	}
-	
-	check_selectop(sop);
 
 	return (0);
 }
@@ -701,35 +691,34 @@ static int	select_add(IMeSocketEventSelectListener* pSelectListener, IMeSocket* 
 static int	select_del(IMeSocketEventSelectListener* pSelectListener, IMeSocket* s, short old, short events)
 {
 	struct selectop *sop = pSelectListener->sop;
-	HSOCKET fd = CSocketGetFd(s);
+	int fd = CSocketGetFd(s);
 
-	if( events&SEvent_Signal )
+	if( !(events&(SEvent_Read|SEvent_Write)) )
 	{
 		DebugLogString( TRUE , "[select_del] no support event!!" );
 		return -1;
 	}
 
-	if( sop->event_fds < fd ) {
-		check_selectop(sop);
+	if( sop->event_fds < fd ) 
+	{
 		DebugLogString( TRUE , "[select_del] error socket!!" );
 		return (0);
 	}
 
-	check_selectop(sop);
-
-	if (events & SEvent_Read)
+	if( events & SEvent_Read )
 	{
+		char* pArrayReadSocket = (char*)sop->event_readset_in + sop->event_fdsz;
+		memset( &pArrayReadSocket[fd*sizeof(IMeSocket*)] , 0 , sizeof(IMeSocket*) );
 		FD_CLR(fd, (fd_set*)sop->event_readset_in);	
-		sop->event_readset_in->socket_array[fd] = NULL;
 	}
 
-	if (events & SEvent_Write)
+	if( events & SEvent_Write )
 	{
+		char* pArrayWriteSocket = (char*)sop->event_writeset_in + sop->event_fdsz;
+		memset( &pArrayWriteSocket[fd*sizeof(IMeSocket*)] , 0 , sizeof(IMeSocket*) );
 		FD_CLR(fd, (fd_set*)sop->event_writeset_in);
-		sop->event_writeset_in->socket_array[fd] = NULL;
 	}
 
-	check_selectop(sop);
 	return (0);
 }
 
@@ -786,7 +775,7 @@ int    IMeSocketEventSelectListenerDel( IMeSocketEventListener* pIMeSocketEventL
 	return -1;
 }
 
-int     IMeSocketEventSelectListenerDispatch( IMeSocketEventListener* pIMeSocketEventListener , uint timeMiliseconds )
+int     IMeSocketEventSelectListenerDispatch( IMeSocketEventListener* pIMeSocketEventListener , uint32_t timeMiliseconds )
 {
     IMeSocketEventSelectListener* pSelectListener = (IMeSocketEventSelectListener*)pIMeSocketEventListener;
     if( pSelectListener )
@@ -825,11 +814,11 @@ IME_EXTERN_C  IMeSocketEventListener*  CSocketEventListenerSelectCreate()
 			return NULL;
         }
 
-        ((IMeSocketEventListener*)pSelectListener->interfacefunction)->m_pAdd = IMeSocketEventSelectListenerAdd;
-        ((IMeSocketEventListener*)pSelectListener->interfacefunction)->m_pDel = IMeSocketEventSelectListenerDel;
-        ((IMeSocketEventListener*)pSelectListener->interfacefunction)->m_pDispatch = IMeSocketEventSelectListenerDispatch;
-        ((IMeSocketEventListener*)pSelectListener->interfacefunction)->m_pDesroy = IMeSocketEventSelectListenerDestroy;
-        ((IMeSocketEventListener*)pSelectListener->interfacefunction)->m_pRegister = IMeSocketEventSelectListenerRegister;
+        ((IMeSocketEventListener*)&pSelectListener->interfacefunction)->m_pAdd = IMeSocketEventSelectListenerAdd;
+        ((IMeSocketEventListener*)&pSelectListener->interfacefunction)->m_pDel = IMeSocketEventSelectListenerDel;
+        ((IMeSocketEventListener*)&pSelectListener->interfacefunction)->m_pDispatch = IMeSocketEventSelectListenerDispatch;
+        ((IMeSocketEventListener*)&pSelectListener->interfacefunction)->m_pDestroy = IMeSocketEventSelectListenerDestroy;
+        ((IMeSocketEventListener*)&pSelectListener->interfacefunction)->m_pRegister = IMeSocketEventSelectListenerRegister;
     }
     
     return (IMeSocketEventListener*)pSelectListener;

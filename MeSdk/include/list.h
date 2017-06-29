@@ -8,15 +8,15 @@ typedef struct _IMeList     IMeList;
 
 IME_EXTERN_C IMeList*    IMeCListCreate();
 
-typedef lposition   (*IMeListAddTail)(IMeList* pIList , void* data );
-typedef lposition   (*IMeListAddHead)(IMeList* pIList , void* data );
+typedef uint32_t    (*IMeListAddTail)(IMeList* pIList , void* data );
+typedef uint32_t    (*IMeListAddHead)(IMeList* pIList , void* data );
 typedef void*       (*IMeListRemoveHead)(IMeList* pIList );
 typedef void*       (*IMeListRemoveTail)(IMeList* pIList );
 typedef int         (*IMeListGetCount)(IMeList* pIList);
-typedef void*       (*IMeListGetNext)(IMeList* pIList , lposition* position );
-typedef void*       (*IMeListGetPre)(IMeList* pIList , lposition* position );
-typedef void*       (*IMeListGetHead)(IMeList* pIList , lposition* position );
-typedef void*       (*IMeListGetTail)(IMeList* pIList , lposition* position );
+typedef void*       (*IMeListGetNext)(IMeList* pIList , uint32_t* position );
+typedef void*       (*IMeListGetPre)(IMeList* pIList , uint32_t* position );
+typedef void*       (*IMeListGetHead)(IMeList* pIList , uint32_t* position );
+typedef void*       (*IMeListGetTail)(IMeList* pIList , uint32_t* position );
 typedef void        (*IMeListDestroy)(IMeList* pIList);
 typedef void        (*IMeListOutPut)(IMeList* pIList);
 

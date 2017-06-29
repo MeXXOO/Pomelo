@@ -16,11 +16,11 @@ IME_EXTERN_C IMeFile*    IMeFileCreate();
 
 typedef int  (*IMeFileOpen)( IMeFile* pIFile , char* pFileName , int nOpenFlag );
 typedef int  (*IMeFileIsOpen)( IMeFile* pIFile );
-typedef uint (*IMeFileRead)( IMeFile* pIFile , char* pBuffer , uint nBufferLen );
-typedef uint (*IMeFileWrite)( IMeFile* pIFile , char* pBuffer , uint nBufferLen );
-typedef int  (*IMeFileSeek)( IMeFile* pIFile , int64 llPos , int nSeekFlag );
-typedef uint64 (*IMeFileGetSize)( IMeFile* pIFile );
-typedef int64 (*IMeFileGetPosition)( IMeFile* pIFile );
+typedef uint (*IMeFileRead)( IMeFile* pIFile , char* pBuffer , uint32_t nBufferLen );
+typedef uint (*IMeFileWrite)( IMeFile* pIFile , char* pBuffer , uint32_t nBufferLen );
+typedef int  (*IMeFileSeek)( IMeFile* pIFile , int64_t llPos , int nSeekFlag );
+typedef uint64_t (*IMeFileGetSize)( IMeFile* pIFile );
+typedef int64_t (*IMeFileGetPosition)( IMeFile* pIFile );
 typedef void (*IMeFileClose)( IMeFile* pIFile );
 typedef void (*IMeFileDestroy)( IMeFile* pIFile );
 

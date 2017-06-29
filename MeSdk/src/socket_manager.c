@@ -18,7 +18,7 @@ IME_EXTERN_C	IMeSocketDispatchGroup*	IMeCSocketManagerGetDispatchGroup( IMeCSock
 	int nUserCnt = -1;
 	IMeSocketDispatchGroup* pSocketDispatchGroup = NULL;
 
-	lposition listPos;
+	uint32_t listPos;
 	IMeSocketDispatchGroup* pFindDispatchGroup = (IMeSocketDispatchGroup*)CListGetHead(pSocketManager->m_pListManagerDispatchGroup,&listPos);
 	//add to minimum user dispatch group
 	while( pFindDispatchGroup )
@@ -35,7 +35,7 @@ IME_EXTERN_C	IMeSocketDispatchGroup*	IMeCSocketManagerGetDispatchGroup( IMeCSock
 	return pSocketDispatchGroup;
 }
 
-IME_EXTERN_C	IMeSocketLsn*	IMeCSocketManagerCreateLsnSocket( IMeSocketManager* pISocketManager , char* ipstr , ushort port , ushort s_family , int s_timeout , OnSocketConnectCallBack connectCB , void* upApp )
+IME_EXTERN_C	IMeSocketLsn*	IMeCSocketManagerCreateLsnSocket( IMeSocketManager* pISocketManager , char* ipstr , uint16_t port , uint16_t s_family , int s_timeout , OnSocketConnectCallBack connectCB , void* upApp )
 {
 	IMeCSocketManager* pSocketManager = (IMeCSocketManager*)pISocketManager;
 	IMeSocketLsn* pSocketListen;
@@ -53,7 +53,7 @@ IME_EXTERN_C	IMeSocketLsn*	IMeCSocketManagerCreateLsnSocket( IMeSocketManager* p
 		return pSocketListen;
 	}
 	
-	CSocketSetExtendParameter( pSocket , (uint)pSocketListen );
+	CSocketSetExtendParameter( pSocket , (uint32_t)pSocketListen );
 	
 	return pSocketListen;
 }
@@ -74,7 +74,7 @@ IME_EXTERN_C    IMeSocketTcp*	IMeCSocketManagerCreateTcpServerSocket( IMeSocketM
     //none-blocked socket
 	CSocketSetOpt( pSocket , SOCKET_SO_NONBLOCK , 1 );
 
-    CSocketSetExtendParameter( pSocket , (uint)pSocketTcp );
+    CSocketSetExtendParameter( pSocket , (uint32_t)pSocketTcp );
     
     CSocketDispatchGroupAddUser( pSocketDispatchGroup , (IMeSocketDispatchUser*)pSocketTcp );
     CSocketDispatchGroupAddEvent( pSocketDispatchGroup , (IMeSocketDispatchUser*)pSocketTcp , SEvent_Read );
@@ -82,14 +82,14 @@ IME_EXTERN_C    IMeSocketTcp*	IMeCSocketManagerCreateTcpServerSocket( IMeSocketM
 	return pSocketTcp;
 }
 
-IME_EXTERN_C	IMeSocketTcp*	IMeCSocketManagerCreateTcpSocket( IMeSocketManager* pISocketManager , char* ipstr , ushort port , ushort s_family , int s_timeout , OnSocketRcvDataCallBack dataCB , void* upApp )
+IME_EXTERN_C	IMeSocketTcp*	IMeCSocketManagerCreateTcpSocket( IMeSocketManager* pISocketManager , char* ipstr , uint16_t port , uint16_t s_family , int s_timeout , OnSocketRcvDataCallBack dataCB , void* upApp )
 {
     IMeSocket* pSocket = CSocketCreate( ipstr , port , s_family, s_timeout , SOCKET_TCP );
 
     return IMeCSocketManagerCreateTcpServerSocket( pISocketManager, pSocket, dataCB, upApp );
 }
 
-IME_EXTERN_C	IMeSocketUdp*	IMeCSocketManagerCreateUdpSocket( IMeSocketManager* pISocketManager , char* ipstr , ushort port , ushort s_family , int s_timeout , OnSocketRcvDataCallBack dataCB , void* upApp )
+IME_EXTERN_C	IMeSocketUdp*	IMeCSocketManagerCreateUdpSocket( IMeSocketManager* pISocketManager , char* ipstr , uint16_t port , uint16_t s_family , int s_timeout , OnSocketRcvDataCallBack dataCB , void* upApp )
 {
 	IMeCSocketManager* pSocketManager = (IMeCSocketManager*)pISocketManager;
     IMeSocketUdp* pSocketUdp;
@@ -107,7 +107,7 @@ IME_EXTERN_C	IMeSocketUdp*	IMeCSocketManagerCreateUdpSocket( IMeSocketManager* p
 		return pSocketUdp;
 	}
 
-	CSocketSetExtendParameter( pSocket , (uint)pSocketUdp );
+	CSocketSetExtendParameter( pSocket , (uint32_t)pSocketUdp );
 
 	CSocketDispatchGroupAddUser( pSocketDispatchGroup , (IMeSocketDispatchUser*)pSocketUdp );
 	CSocketDispatchGroupAddEvent( pSocketDispatchGroup , (IMeSocketDispatchUser*)pSocketUdp , SEvent_Read );
@@ -120,7 +120,7 @@ IME_EXTERN_C	void	IMeCSocketManagerDestroy( IMeSocketManager* pISocketManager )
 	IMeCSocketManager* pSocketManager = (IMeCSocketManager*)pISocketManager;
 	IMeSocketDispatchGroup* pSocketDispatchGroup = NULL;
 
-	while( pSocketDispatchGroup=CListRemoveHead(pSocketManager->m_pListManagerDispatchGroup) )
+	while( (pSocketDispatchGroup=(IMeSocketDispatchGroup*)CListRemoveHead(pSocketManager->m_pListManagerDispatchGroup)) )
 	{
 		CSocketDispatchGroupDestroy( pSocketDispatchGroup );
 	}

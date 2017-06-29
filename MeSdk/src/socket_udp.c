@@ -1,9 +1,9 @@
 
 #include    "../include/include.h"
 
-#define     UdpPackCmd_Data		1   /* 数据包中的内容为对方发送的数据 */
-#define     UdpPackCmd_Ack		2   /* 数据包中的内容为对方收到该数据包的回应 */
-#define		UdpPackCmd_Call		3	/* 数据包中的内容为UDP穿透呼叫数据 */
+#define     UdpPackCmd_Data		1   /* 脢媒戮脻掳眉脰脨碌脛脛脷脠脻脦陋露脭路陆路垄脣脥碌脛脢媒戮脻 */
+#define     UdpPackCmd_Ack		2   /* 脢媒戮脻掳眉脰脨碌脛脛脷脠脻脦陋露脭路陆脢脮碌陆赂脙脢媒戮脻掳眉碌脛禄脴脫娄 */
+#define		UdpPackCmd_Call		3	/* 脢媒戮脻掳眉脰脨碌脛脛脷脠脻脦陋UDP麓漏脥赂潞么陆脨脢媒戮脻 */
 
 #define		DataPack_DefaultTimeInterval	100			//minimum packet time interval
 #define		DataPack_MaxCacheSize			2*1024*1024	//2MB data packet
@@ -25,51 +25,51 @@
 /* packet header */
 typedef struct _IMeUdpPackHeader
 {
-    uint     nCmdID;             /* 命令标识 */
-    uint     nPacketID;          /* 数据包ID */
-    int      nPacketIndex;       /* 数据包包序 */
-    int      nSrcPacketLen;      /* 原始数据包的总长度 */
+    uint32_t     nCmdID;             /* 脙眉脕卯卤锚脢露 */
+    uint32_t     nPacketID;          /* 脢媒戮脻掳眉ID */
+    int      nPacketIndex;       /* 脢媒戮脻掳眉掳眉脨貌 */
+    int      nSrcPacketLen;      /* 脭颅脢录脢媒戮脻掳眉碌脛脳脺鲁陇露脠 */
 }IMeUdpPackHeader; 
 
 /* packet sub node */
 typedef struct _IMeUdpSubPackNode
 {
-    byte     mRSTimes;           /* 该数据收发次数 */
-    int      mOffset;            /* 该数据包偏移 */
-    int      mDataLen;           /* 该数据包长度 */
-    byte     mNeedSend;          /* 该数据包是否还需要继续发送 */
-    uint     mLastSndTime;       /* 该数据包上一次被发送的时间 */
+    uint8_t     mRSTimes;           /* 赂脙脢媒戮脻脢脮路垄麓脦脢媒 */
+    int      mOffset;            /* 赂脙脢媒戮脻掳眉脝芦脪脝 */
+    int      mDataLen;           /* 赂脙脢媒戮脻掳眉鲁陇露脠 */
+    uint8_t     mNeedSend;          /* 赂脙脢媒戮脻掳眉脢脟路帽禄鹿脨猫脪陋录脤脨酶路垄脣脥 */
+    uint32_t     mLastSndTime;       /* 赂脙脢媒戮脻掳眉脡脧脪禄麓脦卤禄路垄脣脥碌脛脢卤录盲 */
 }IMeUdpSubPackNode;
 
 typedef struct _IMeUdpPacket{
     int mRSCnt; /* send or receive sub-pack count */
     int mCnt;   /* total sub-pack count */
     int mSize;  /* packet total size */
-    uint mID;    /* packet id */
+    uint32_t mID;    /* packet id */
     char*   mData;  /* packet data */
     IMeUdpSubPackNode* mNode;   /* packet sub-pack info */
-	uint mLastRcvTime;	/* last receive packet time */
+	uint32_t mLastRcvTime;	/* last receive packet time */
 }IMeUdpPacket;
 
 //udp user
 typedef struct _IMeUdpUser
 {
-    uint mPacketIndexUsed;        /* count for packet id */
+    uint32_t mPacketIndexUsed;        /* count for packet id */
     IMeArray*    mListPacket;    /* sort by each user's packet id */
     socket_addr_t  mUserAddr;
-	uint	mLastRcvTime;		 /* last receive packet time */
-    /* 每包数据重发时间间隔 */
-    uint m_nSndIntervalTime;
-	/* 一次udp用户单次发送多少个数据包后停止发送,转而读取数据回应ack */
+	uint32_t	mLastRcvTime;		 /* last receive packet time */
+    /* 脙驴掳眉脢媒戮脻脰脴路垄脢卤录盲录盲赂么 */
+    uint32_t m_nSndIntervalTime;
+	/* 脪禄麓脦udp脫脙禄搂碌楼麓脦路垄脣脥露脿脡脵赂枚脢媒戮脻掳眉潞贸脥拢脰鹿路垄脣脥,脳陋露酶露脕脠隆脢媒戮脻禄脴脫娄ack */
 	int m_SndUserMaxPacksOneTime;
-	/* udp发送的总数据包数 */
-	int64 m_llSndUserPackCnt;
-	/* udp接收一个数据包的超时时间 */
+	/* udp路垄脣脥碌脛脳脺脢媒戮脻掳眉脢媒 */
+	int64_t m_llSndUserPackCnt;
+	/* udp陆脫脢脮脪禄赂枚脢媒戮脻掳眉碌脛鲁卢脢卤脢卤录盲 */
 	int m_nRcvPacketTimeOut;
-	/* 接收到的udp回应包 */
-	int64 m_llRcvPacketAck;
-	/* 当前缓存数据大小 */
-	uint m_dwCurCacheSize;
+	/* 陆脫脢脮碌陆碌脛udp禄脴脫娄掳眉 */
+	int64_t m_llRcvPacketAck;
+	/* 碌卤脟掳禄潞麓忙脢媒戮脻麓贸脨隆 */
+	uint32_t m_dwCurCacheSize;
 }IMeUdpUser;
 
 
@@ -96,29 +96,29 @@ typedef struct _IMeCUdpSocket{
 	OnUdpSocketCallCallBack	m_pSocketCallCallBack;
 	void*	m_upAppCall;
 
-    uint8   m_bRunning;
+    uint8_t   m_bRunning;
     IMeEvent*   m_evWaitFree;
     
-    /* 网络mtu大小 */
+    /* 脥酶脗莽mtu麓贸脨隆 */
     int m_nMtuSize;
       
-	/* 本地最大发送带宽 */
+	/* 卤戮碌脴脳卯麓贸路垄脣脥麓酶驴铆 */
 	int m_nMaxSndBand;
-	/* 每包数据最大发送次数 */
+	/* 脙驴掳眉脢媒戮脻脳卯麓贸路垄脣脥麓脦脢媒 */
     int m_nSndMaxPacketTimes;
     
-    /* 数据发送用户列表 */
+    /* 脢媒戮脻路垄脣脥脫脙禄搂脕脨卤铆 */
     IMeArray*   m_listSndUser;
     IMeLock*    m_lockerSndUser;
     
-    /* 数据接收用户列表 */
+    /* 脢媒戮脻陆脫脢脮脫脙禄搂脕脨卤铆 */
     IMeArray*   m_listRcvUser;
     IMeLock*    m_lockerRcvUser;
     
-	/* 数据收发标识锁 */
+	/* 脢媒戮脻脢脮路垄卤锚脢露脣酶 */
 	IMeLock*	m_lockerFlag;
 
-    uint m_dispatchUser_extendParameter;
+    uint32_t m_dispatchUser_extendParameter;
     
 }IMeCUdpSocket;
 
@@ -234,10 +234,10 @@ void    IMeUdpPacketDestroy( IMeCUdpSocket* pUdpSocket, IMeUdpPacket* pUdpPacket
 }
 
 //sort receive or send user array 
-int OnUdpRSUserArrayKeyCompare( uint64 nKey1 , uint64 nKey2 , void* parameter )
+int OnUdpRSUserArrayKeyCompare( uint64_t nKey1 , uint64_t nKey2 , void* parameter )
 {
-	IMeUdpUser* pUdpUser1 = (IMeUdpUser*)nKey1;
-	IMeUdpUser* pUdpUser2 = (IMeUdpUser*)nKey2;
+	IMeUdpUser* pUdpUser1 = (IMeUdpUser*)(uint32_t)nKey1;
+	IMeUdpUser* pUdpUser2 = (IMeUdpUser*)(uint32_t)nKey2;
 
 	if( pUdpUser1->mUserAddr.family == pUdpUser2->mUserAddr.family )
 	{
@@ -283,7 +283,7 @@ void    IMeUdpUserDestroy( IMeCUdpSocket* pUdpSocket , IMeUdpUser* pUdpUser )
 {	
 	IMeUdpPacket* pUdpPacket;
 	
-	while( pUdpPacket = (IMeUdpPacket*)CArrayRemoveAt(pUdpUser->mListPacket,0) )
+	while( (pUdpPacket = (IMeUdpPacket*)CArrayRemoveAt(pUdpUser->mListPacket,0)) )
 	{
 		IMeUdpPacketDestroy( pUdpSocket , pUdpPacket );
 	}
@@ -336,7 +336,7 @@ void     IMeCUdpSocketRcvPacketData( IMeCUdpSocket* pUdpSocket , char* pRcvBuffe
 
     socket_addr_init_byaddr( &stRcvUser.mUserAddr, rcv_addr, rcv_addr->family );
 
-    pRcvUser = (IMeUdpUser*)CArrayFindData( pUdpSocket->m_listRcvUser, (uint64)&stRcvUser );    
+    pRcvUser = (IMeUdpUser*)CArrayFindData( pUdpSocket->m_listRcvUser, (uint32_t)&stRcvUser );    
     if( pRcvUser )
     {
 		if( pRcvUser->mPacketIndexUsed > (int)pUdpPackHeader->nPacketID )
@@ -423,7 +423,7 @@ void    IMeCUdpSocketRcvPacketAck( IMeCUdpSocket* pUdpSocket , IMeUdpPackHeader*
 
     CLock_Lock( pUdpSocket->m_lockerSndUser );
 
-    pSndUser = (IMeUdpUser*)CArrayFindData( pUdpSocket->m_listSndUser, (uint64)&stSndUser );
+    pSndUser = (IMeUdpUser*)CArrayFindData( pUdpSocket->m_listSndUser, (uint32_t)&stSndUser );
     if( pSndUser )
     {
 		CLock_Lock( pUdpSocket->m_lockerFlag );
@@ -454,7 +454,7 @@ void    IMeCUdpSocketRcvPacketAck( IMeCUdpSocket* pUdpSocket , IMeUdpPackHeader*
 
 	//change local user rcv data time
 	CLock_Lock( pUdpSocket->m_lockerRcvUser );
-	pRcvUser = (IMeUdpUser*)CArrayFindData( pUdpSocket->m_listRcvUser, (uint64)&stSndUser );
+	pRcvUser = (IMeUdpUser*)CArrayFindData( pUdpSocket->m_listRcvUser, (uint32_t)&stSndUser );
 	if( pRcvUser )	pRcvUser->mLastRcvTime = IMeGetCurrentTime();
 	CLock_Unlock( pUdpSocket->m_lockerRcvUser );
 }
@@ -472,14 +472,14 @@ void     IMeCUdpSocketRcvPacketUserCall( IMeCUdpSocket* pUdpSocket , char* pRcvB
 	socket_addr_init_byaddr( &stUdpRcvUser.mUserAddr, rcv_addr, rcv_addr->family );
 	
 	CLock_Lock( pUdpSocket->m_lockerRcvUser );
-	pRcvUser = (IMeUdpUser*)CArrayFindData( pUdpSocket->m_listRcvUser, (uint64)&stUdpRcvUser );
+	pRcvUser = (IMeUdpUser*)CArrayFindData( pUdpSocket->m_listRcvUser, (uint32_t)&stUdpRcvUser );
 	if( !pRcvUser )
 	{
 		pRcvUser = IMeUdpUserCreate( pUdpSocket , rcv_addr );
 		if( pRcvUser )
 		{
 			pRcvUser->mPacketIndexUsed = 1;
-			CArrayAdd( pUdpSocket->m_listRcvUser , pRcvUser , (uint64)pRcvUser );
+			CArrayAdd( pUdpSocket->m_listRcvUser , pRcvUser , (uint32_t)pRcvUser );
 		}
 	}
 	CLock_Unlock( pUdpSocket->m_lockerRcvUser );
@@ -523,7 +523,7 @@ void     IMeCUdpSocketRcvDataProcess( IMeCUdpSocket* pUdpSocket , char* pRcvBuff
 void	IMeCUdpSocketCheckCacheBuffer( IMeCUdpSocket* pUdpSocket )
 {
 	int i,j;
-	uint dwCurTime = IMeGetCurrentTime();
+	uint32_t dwCurTime = IMeGetCurrentTime();
 
 	CLock_Lock( pUdpSocket->m_lockerRcvUser );
 	
@@ -664,19 +664,19 @@ void    IMeCUdpSocketRead( IMeCUdpSocket* pUdpSocket )
 }
 
 //send packet to remote
-uint8 IMeCUdpSocketWrite( IMeCUdpSocket* pUdpSocket , byte* lpData , int nLen , socket_addr_t* addr_t )
+uint8_t IMeCUdpSocketWrite( IMeCUdpSocket* pUdpSocket , uint8_t* lpData , int nLen , socket_addr_t* addr_t )
 {
-    int nSendLen = CSocketSendToByAddr( pUdpSocket->m_pSocket , addr_t , lpData , nLen , 0 );
+    int nSendLen = CSocketSendToByAddr( pUdpSocket->m_pSocket , addr_t , (char*)lpData , nLen , 0 );
 	//if send data len less than packet size , resend this packet next time
     return nSendLen==nLen;
 }
 
-uint8   IMeCUdpSocketWriteDataPacket( IMeCUdpSocket* pUdpSocket , IMeUdpPacket* pDataPacket , IMeUdpUser* pRSUser , int* nCurSndPackCnt )
+uint8_t   IMeCUdpSocketWriteDataPacket( IMeCUdpSocket* pUdpSocket , IMeUdpPacket* pDataPacket , IMeUdpUser* pRSUser , int* nCurSndPackCnt )
 {
-    uint8 bCanSndOk = TRUE;
+    uint8_t bCanSndOk = TRUE;
     int i;
 	IMeUdpSubPackNode* pSubPackNode;
-	uint dwCurTime;
+	uint32_t dwCurTime;
 	
 	int nRealSndCnt = 0;
 	int nPacketCnt = UdpPackMin(pRSUser->m_SndUserMaxPacksOneTime , pDataPacket->mCnt);
@@ -692,7 +692,7 @@ uint8   IMeCUdpSocketWriteDataPacket( IMeCUdpSocket* pUdpSocket , IMeUdpPacket* 
         {
 			++nRealSndCnt;
 			--nPacketCnt;
-            bCanSndOk = IMeCUdpSocketWrite( pUdpSocket , &pDataPacket->mData[pSubPackNode->mOffset] , pSubPackNode->mDataLen, &pRSUser->mUserAddr );
+            bCanSndOk = IMeCUdpSocketWrite( pUdpSocket , (uint8_t*)&pDataPacket->mData[pSubPackNode->mOffset] , pSubPackNode->mDataLen, &pRSUser->mUserAddr );
             if( bCanSndOk )
             {
                 pSubPackNode->mRSTimes++;
@@ -722,9 +722,9 @@ uint8   IMeCUdpSocketWriteDataPacket( IMeCUdpSocket* pUdpSocket , IMeUdpPacket* 
     return bCanSndOk;
 }
 
-uint8   IMeCUdpSocketWriteUserPacket( IMeCUdpSocket* pUdpSocket , IMeUdpUser* pRSUser , int* nRealWriteCnt )
+uint8_t   IMeCUdpSocketWriteUserPacket( IMeCUdpSocket* pUdpSocket , IMeUdpUser* pRSUser , int* nRealWriteCnt )
 {
-    uint8 bCanSndOk = TRUE;
+    uint8_t bCanSndOk = TRUE;
     IMeUdpPacket* pDataPacket;
 	int i = 0;
 	int nCurSendPackCnt = 0;
@@ -780,13 +780,13 @@ void    IMeUdpSocketDispatchUserRemove( IMeSocketDispatchUser* pSocketDispatchUs
     DebugLogString( TRUE , "[IMeUdpSocketDispatchUserRemove] socket remove from dispatch group!!" );
 }
 
-uint8	IMeCUdpSocketHasSendPackets( IMeCUdpSocket* pSocketUdp )
+uint8_t	IMeCUdpSocketHasSendPackets( IMeCUdpSocket* pSocketUdp )
 {
 	int i = 0;
 	IMeUdpUser* pRSUser;
-	uint8 bHasSndPacks = FALSE;
+	uint8_t bHasSndPacks = FALSE;
 	int nLeftPacketCnt = 0;
-	uint dwCurTime = IMeGetCurrentTime();
+	//uint32_t dwCurTime = IMeGetCurrentTime();
 
 	CLock_Lock( pSocketUdp->m_lockerSndUser );
     pRSUser = (IMeUdpUser*)CArrayGetAt(pSocketUdp->m_listSndUser,i++);
@@ -813,7 +813,7 @@ void	IMeUdpSocketDispatchUserSend( IMeSocketDispatchUser* pSocketDispatchUser )
 {
 	IMeCUdpSocket* pSocketUdp = (IMeCUdpSocket*)pSocketDispatchUser;
 	
-    uint8 bCanSndOk = TRUE;
+    uint8_t bCanSndOk = TRUE;
     IMeUdpUser* pRSUser;
     int i = 0;
 
@@ -857,16 +857,16 @@ void	IMeUdpSocketDispatchUserRcv( IMeSocketDispatchUser* pSocketDispatchUser )
 void	IMeUdpSocketDispatchUserException( IMeSocketDispatchUser* pSocketDispatchUser )
 {
 	IMeCUdpSocket* pSocketUdp = (IMeCUdpSocket*)pSocketDispatchUser;
-	DebugLogString( TRUE , "[IMeUdpSocketDispatchUserException] socket exception event occur!!" );
+	DebugLogString( TRUE , "[IMeUdpSocketDispatchUserException] socket exception event occur:%0x!!" , (uint32_t)pSocketUdp );
 }
 
-void	IMeUdpSocketDispatchUserSetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser , uint extendParameter )
+void	IMeUdpSocketDispatchUserSetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser , uint32_t extendParameter )
 {
 	IMeCUdpSocket* pSocketUdp = (IMeCUdpSocket*)pSocketDispatchUser;
 	pSocketUdp->m_dispatchUser_extendParameter = extendParameter;
 }
 
-uint	IMeUdpSocketDispatchUserGetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser )
+uint32_t	IMeUdpSocketDispatchUserGetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser )
 {
 	IMeCUdpSocket* pSocketUdp = (IMeCUdpSocket*)pSocketDispatchUser;
 	return pSocketUdp->m_dispatchUser_extendParameter;
@@ -884,17 +884,17 @@ int		IMeCSocketUdpSendInternel( IMeSocketUdp* pISocketUdp , char* lpData , int n
 
 	IMeUdpPacket* pUdpPacket = NULL;
 	IMeUdpUser *pUdpUser, stUdpUser;
-	int nPacketCacheCnt = 0;
+	//int nPacketCacheCnt = 0;
 
 	socket_addr_init_byaddr( &stUdpUser.mUserAddr, addr, addr->family );
 
     CLock_Lock( pUdpSocket->m_lockerSndUser );
 
-    pUdpUser = (IMeUdpUser*)CArrayFindData( pUdpSocket->m_listSndUser, (uint64)&stUdpUser );
+    pUdpUser = (IMeUdpUser*)CArrayFindData( pUdpSocket->m_listSndUser, (uint32_t)&stUdpUser );
     if( !pUdpUser )
     {
         pUdpUser = IMeUdpUserCreate( pUdpSocket, addr );
-        if( pUdpUser )  CArrayAdd( pUdpSocket->m_listSndUser, pUdpUser, (uint64)pUdpUser );
+        if( pUdpUser )  CArrayAdd( pUdpSocket->m_listSndUser, pUdpUser, (uint32_t)pUdpUser );
     }
 
     if( pUdpUser )
@@ -942,9 +942,9 @@ int		IMeCSocketUdpSendByAddr( IMeSocketUdp* pISocketUdp, char* lpData , int nLen
 }
 
 /* send data interface for out user use */
-int     IMeCSocketUdpSend( IMeSocketUdp* pISocketUdp , char* lpData , int nLen , char* ipStr , ushort port , ushort family )
+int     IMeCSocketUdpSend( IMeSocketUdp* pISocketUdp , char* lpData , int nLen , char* ipStr , uint16_t port , uint16_t family )
 {
-    IMeCUdpSocket* pUdpSocket = (IMeCUdpSocket*)pISocketUdp;
+    //IMeCUdpSocket* pUdpSocket = (IMeCUdpSocket*)pISocketUdp;
     
     socket_addr_t snd_addr;    
 
@@ -960,7 +960,7 @@ void    IMeCSocketUdpSetOpt( IMeSocketUdp* pISocketUdp, int opt, int optValue )
         CSocketSetOpt( pSocketUdp->m_pSocket, opt, optValue );
 }
 
-void	IMeCSocketUdpEnableAsTcp( IMeSocketUdp* pISocketUdp, uint8 bEnable )
+void	IMeCSocketUdpEnableAsTcp( IMeSocketUdp* pISocketUdp, uint8_t bEnable )
 {
 	IMeCUdpSocket* pSocketUdp = (IMeCUdpSocket*)pISocketUdp;
 	if( bEnable )
@@ -969,7 +969,7 @@ void	IMeCSocketUdpEnableAsTcp( IMeSocketUdp* pISocketUdp, uint8 bEnable )
 		pSocketUdp->m_nSndMaxPacketTimes = UdpPackSendMaxTimes;
 }
 
-void	IMeCSocketUdpCallUser( IMeSocketUdp* pISocketUdp, char* ipStr, ushort port, ushort family )
+void	IMeCSocketUdpCallUser( IMeSocketUdp* pISocketUdp, char* ipStr, uint16_t port, uint16_t family )
 {
 	IMeCUdpSocket* pSocketUdp = (IMeCUdpSocket*)pISocketUdp;
 	if( pSocketUdp->m_pSocket )
@@ -981,12 +981,12 @@ void	IMeCSocketUdpCallUser( IMeSocketUdp* pISocketUdp, char* ipStr, ushort port,
 		
 		//create rcv user
 		CLock_Lock( pSocketUdp->m_lockerRcvUser );
-		pRcvUser = (IMeUdpUser*)CArrayFindData( pSocketUdp->m_listRcvUser, (uint64)&stUser );
+		pRcvUser = (IMeUdpUser*)CArrayFindData( pSocketUdp->m_listRcvUser, (uint32_t)&stUser );
 		if( !pRcvUser )
 		{
 			pRcvUser = IMeUdpUserCreate( pSocketUdp, &stUser.mUserAddr );
 			if( pRcvUser )
-				CArrayAdd( pSocketUdp->m_listRcvUser, pRcvUser, (uint64)pRcvUser );
+				CArrayAdd( pSocketUdp->m_listRcvUser, pRcvUser, (uint32_t)pRcvUser );
 		}
 		CLock_Unlock( pSocketUdp->m_lockerRcvUser );
 
@@ -999,10 +999,10 @@ void	IMeCSocketUdpCallUser( IMeSocketUdp* pISocketUdp, char* ipStr, ushort port,
 	}
 }
 
-uint8		IMeCSocketUdpBind( IMeSocketUdp* pISocketUdp )
+uint8_t		IMeCSocketUdpBind( IMeSocketUdp* pISocketUdp )
 {
     IMeCUdpSocket* pSocketUdp = (IMeCUdpSocket*)pISocketUdp;
-	uint8 bBindRes = FALSE;
+	uint8_t bBindRes = FALSE;
     
 	if( pSocketUdp->m_pSocket )
 		bBindRes = CSocketBind( pSocketUdp->m_pSocket );
@@ -1033,12 +1033,12 @@ void    IMeCSocketUdpDestroy( IMeSocketUdp* pISocketUdp )
         CEventDestroy( pUdpSocket->m_evWaitFree );
 
         /* rcv user */
-        while( pUdpUser=(IMeUdpUser*)CArrayRemoveAt(pUdpSocket->m_listRcvUser,0) )
+        while( ( pUdpUser=(IMeUdpUser*)CArrayRemoveAt(pUdpSocket->m_listRcvUser,0) ) )
             IMeUdpUserDestroy( pUdpSocket, pUdpUser );
         CArrayDestroy( pUdpSocket->m_listRcvUser );
 
         /* snd user */
-        while( pUdpUser=(IMeUdpUser*)CArrayRemoveAt(pUdpSocket->m_listSndUser,0) )
+        while( ( pUdpUser=(IMeUdpUser*)CArrayRemoveAt(pUdpSocket->m_listSndUser,0) ) )
             IMeUdpUserDestroy( pUdpSocket, pUdpUser );
         CArrayDestroy( pUdpSocket->m_listSndUser );
         
