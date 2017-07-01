@@ -11,3 +11,4 @@ TSlaver/
 *.opt
 *.plg
 *.tmp
+.depend

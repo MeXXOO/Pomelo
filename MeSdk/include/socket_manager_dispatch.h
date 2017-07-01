@@ -6,12 +6,12 @@
 /* manager dispatch user */
 typedef struct _IMeSocketDispatchUser	IMeSocketDispatchUser;
 
-typedef		void	(*IMeSocketDispatchUserRemove)( IMeSocketDispatchUser* pSocketDispatchUser );
-typedef		void	(*IMeSocketDispatchUserSend)( IMeSocketDispatchUser* pSocketDispatchUser );
-typedef		void	(*IMeSocketDispatchUserRcv)( IMeSocketDispatchUser* pSocketDispatchUser );
-typedef		void	(*IMeSocketDispatchUserException)( IMeSocketDispatchUser* pSocketDispatchUser );
-typedef		void	(*IMeSocketDispatchUserSetExtendParameter)( IMeSocketDispatchUser* pSocketDispatchUser , uint32_t extendParameter );
-typedef		uint	(*IMeSocketDispatchUserGetExtendParameter)( IMeSocketDispatchUser* pSocketDispatchUser );
+typedef		void		(*IMeSocketDispatchUserRemove)( IMeSocketDispatchUser* pSocketDispatchUser );
+typedef		void		(*IMeSocketDispatchUserSend)( IMeSocketDispatchUser* pSocketDispatchUser );
+typedef		void		(*IMeSocketDispatchUserRcv)( IMeSocketDispatchUser* pSocketDispatchUser );
+typedef		void		(*IMeSocketDispatchUserException)( IMeSocketDispatchUser* pSocketDispatchUser );
+typedef		void		(*IMeSocketDispatchUserSetExtendParameter)( IMeSocketDispatchUser* pSocketDispatchUser , uint32_t extendParameter );
+typedef		uint32_t	(*IMeSocketDispatchUserGetExtendParameter)( IMeSocketDispatchUser* pSocketDispatchUser );
 typedef		IMeSocket*	(*IMeSocketDispatchUserGetSocket)( IMeSocketDispatchUser* pSocketDispatchUser );
 
 struct _IMeSocketDispatchUser{

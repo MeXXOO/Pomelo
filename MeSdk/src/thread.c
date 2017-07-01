@@ -8,10 +8,10 @@ typedef struct _IMeCThread
     HANDLE m_hThread;
 }IMeCThread;
 
-void    IMeCThreadExit( IMeThread* pIThread , uint dwMilliseconds )
+void    IMeCThreadExit( IMeThread* pIThread , uint32_t dwMilliseconds )
 {
     IMeCThread* pThread = (IMeCThread*)pIThread;
-    uint dwExitCode;
+    uint32_t dwExitCode;
     if( !pThread || !pThread->m_hThread )   return;
 
     if( WaitForSingleObject( pThread->m_hThread , INFINITE)==FALSE )

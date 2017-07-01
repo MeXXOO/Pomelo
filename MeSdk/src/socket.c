@@ -207,7 +207,7 @@ uint16_t           IMeCSocketGetAddrType( IMeSocket* pISocket , uint8_t bRemote 
 //////////////////////////////////////////////////////////////////////////
 //********************** socket attribute opt start ********************//
 //////////////////////////////////////////////////////////////////////////
-#define         SOCKET_MAX_SECS_TO_LINGER   30  /* ????¡Á??¨¤?¨®¨º¨¹¨¢??¨®¨ºy */
+#define         SOCKET_MAX_SECS_TO_LINGER   30  /* ????Â¡Ã??Â¨Â¤?Â¨Â®Â¨ÂºÂ¨Â¹Â¨Â¢??Â¨Â®Â¨Âºy */
 
 #define socket_is_option_set(mask, option)  ((mask & option) ==option)
 #define socket_set_option(mask, option, on) \
@@ -307,10 +307,10 @@ int  IMeCSocketGetOpt( IMeSocket* pISocket , int opt )
         res = pSocket->s_timeout;
         break;
     case SOCKET_SO_RCVBUF:
-        getsockopt( pSocket->socket_des , SOL_SOCKET , SO_RCVBUF , (char*)&res , &nLen );
+        getsockopt( pSocket->socket_des , SOL_SOCKET , SO_RCVBUF , (char*)&res , (socklen_t*)&nLen );
         break;
     case SOCKET_SO_SNDBUF:
-        getsockopt( pSocket->socket_des , SOL_SOCKET , SO_SNDBUF , (char*)&res , &nLen );
+        getsockopt( pSocket->socket_des , SOL_SOCKET , SO_SNDBUF , (char*)&res , (socklen_t*)&nLen );
         break;
     case SOCKET_SO_KEEPALIVE:
     case SOCKET_SO_DEBUG:
@@ -327,7 +327,7 @@ uint8_t IMeCSocketGetReadSize( IMeSocket* pISocket , uint32_t* pBufferLen )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
 
-    if( NET_SOCKET_ERROR==ioctlsocket( pSocket->socket_des , FIONREAD , (u_long*)&pBufferLen ) )
+    if( NET_SOCKET_ERROR==ioctlsocket( pSocket->socket_des , FIONREAD , (u_long*)pBufferLen ) )
     {
         DebugLogString( TRUE , "[IMeCSocketGetReadSize] ioctlsocket error %s" , GetNetOsError() );
         return FALSE;
@@ -495,21 +495,21 @@ uint8_t     IMeCSocketConnect( IMeSocket* pISocket , char* ipstr , uint16_t port
         
         socket_error = GetNetOsError();
         
-        /* ¡¤?¡Á¨¨¨¨?¨¢??¨®,¦Ì¡Â¨®?¨¢¡é?¡ä¡¤¦Ì??¨¢??¨®?D¡Á¡ä¨¬? */
+        /* Â¡Â¤?Â¡ÃÂ¨Â¨Â¨Â¨?Â¨Â¢??Â¨Â®,Â¦ÃŒÂ¡Ã‚Â¨Â®?Â¨Â¢Â¡Ã©?Â¡Ã¤Â¡Â¤Â¦ÃŒ??Â¨Â¢??Â¨Â®?DÂ¡ÃÂ¡Ã¤Â¨Â¬? */
         if( socket_error != SOCKET_CONNECT_PROGRESS )  
         {
             DebugLogString( TRUE , "[IMeCSocketConnect] connect failed error:%s" , ConvertErrorCodeToString(socket_error) );
             return FALSE;
         }
         
-        /* ¨¦¨¨??¦Ì¨¨¡äy¨º¡À???a¨¢?,?¨°?¡À?¨®¡¤¦Ì??,¡¤??¨°¦Ì¨¨¡äy¨¢??¨®¨ª¨º3¨¦?¨°¨º?3?¨º¡À¡¤¦Ì?? */
+        /* Â¨Â¦Â¨Â¨??Â¦ÃŒÂ¨Â¨Â¡Ã¤yÂ¨ÂºÂ¡Ã€???aÂ¨Â¢?,?Â¨Â°?Â¡Ã€?Â¨Â®Â¡Â¤Â¦ÃŒ??,Â¡Â¤??Â¨Â°Â¦ÃŒÂ¨Â¨Â¡Ã¤yÂ¨Â¢??Â¨Â®Â¨ÂªÂ¨Âº3Â¨Â¦?Â¨Â°Â¨Âº?3?Â¨ÂºÂ¡Ã€Â¡Â¤Â¦ÃŒ?? */
         if( pSocket->s_timeout==0 )
         {
             DebugLogString( TRUE , "[IMeCSocketConnect] connecting ......" );
             return TRUE;
         }
         
-        /* ¦Ì¨¨¡äy¨¢??¨®¨ª¨º3¨¦?¨°¨º?¨¢??¨®3?¨º¡À */
+        /* Â¦ÃŒÂ¨Â¨Â¡Ã¤yÂ¨Â¢??Â¨Â®Â¨ÂªÂ¨Âº3Â¨Â¦?Â¨Â°Â¨Âº?Â¨Â¢??Â¨Â®3?Â¨ÂºÂ¡Ã€ */
         FD_ZERO(&write_fdset);
         FD_SET( SOCKET_FD(pSocket->socket_des) , &write_fdset );
         FD_ZERO(&exception_fdset);
@@ -546,7 +546,7 @@ uint8_t     IMeCSocketConnect( IMeSocket* pISocket , char* ipstr , uint16_t port
             char exception_str[256] = { 0 };            
             int exception_str_len = 255;
             /* get error info failed */
-            if( (socket_error=getsockopt(pSocket->socket_des, SOL_SOCKET, SO_ERROR, exception_str, &exception_str_len))==NET_SOCKET_ERROR ) 
+            if( (socket_error=getsockopt(pSocket->socket_des, SOL_SOCKET, SO_ERROR, exception_str, (socklen_t*)&exception_str_len))==NET_SOCKET_ERROR ) 
             {
                 socket_error = GetNetOsError();
                 DebugLogString( TRUE , "[IMeCSocketConnect]:getsockopt failed error str:%s" , ConvertErrorCodeToString(socket_error) );
@@ -621,7 +621,7 @@ uint8_t    IMeCSocketAccept( IMeSocket* pISocket , socket_addr_t* pRemoteAddr , 
         return bRes;
     }    
     
-    /* ?¨®¨º¨¹ipv4¦Ì????¨® */
+    /* ?Â¨Â®Â¨ÂºÂ¨Â¹ipv4Â¦ÃŒ????Â¨Â® */
     if( pSocket->local_addr->family==AF_INET )
     {
         nAddrLen = sizeof(struct sockaddr_in);
@@ -629,7 +629,7 @@ uint8_t    IMeCSocketAccept( IMeSocket* pISocket , socket_addr_t* pRemoteAddr , 
         pRemoteAddr->family = AF_INET;
         pRemoteAddr->ipstr = &pRemoteAddr->addr_ip4.sin_addr;
     }
-    /* ?¨®¨º¨¹ipv6¦Ì????¨® */
+    /* ?Â¨Â®Â¨ÂºÂ¨Â¹ipv6Â¦ÃŒ????Â¨Â® */
     else
     {
         nAddrLen = sizeof(struct sockaddr_in6);
@@ -638,7 +638,7 @@ uint8_t    IMeCSocketAccept( IMeSocket* pISocket , socket_addr_t* pRemoteAddr , 
         pRemoteAddr->ipstr = &pRemoteAddr->addr_ip6.sin6_addr;
     }
     
-    *socket_des = accept( pSocket->socket_des , pAddr , &nAddrLen );
+    *socket_des = accept( pSocket->socket_des , pAddr , (socklen_t*)&nAddrLen );
     if( *socket_des==NET_SOCKET_ERROR )
     {
 		int nErrorCode = GetNetOsError();
@@ -795,12 +795,12 @@ int    IMeCSocketRecvFrom( IMeSocket* pISocket , char* buf , int nLen , int flag
     if( pSocket->local_addr->family==AF_INET )
     {
         int nAddrLen = sizeof(struct sockaddr_in);
-        rcvStatus = recvfrom(pSocket->socket_des, buf, nLen, flags, (struct sockaddr*)&pSocket->remote_addr->addr_ip4, &nAddrLen );
+        rcvStatus = recvfrom(pSocket->socket_des, buf, nLen, flags, (struct sockaddr*)&pSocket->remote_addr->addr_ip4, (socklen_t*)&nAddrLen );
     }
     else
     {
         int nAddrLen = sizeof(struct sockaddr_in6);
-        rcvStatus = recvfrom(pSocket->socket_des, buf, nLen, flags, (struct sockaddr*)&pSocket->remote_addr->addr_ip6, &nAddrLen );
+        rcvStatus = recvfrom(pSocket->socket_des, buf, nLen, flags, (struct sockaddr*)&pSocket->remote_addr->addr_ip6, (socklen_t*)&nAddrLen );
     }
     
     if( rcvStatus==NET_SOCKET_ERROR )
@@ -823,13 +823,13 @@ int    IMeCSocketRecvFromByAddr( IMeSocket* pISocket , char* buf , int nLen , so
     if( pSocket->local_addr->family==AF_INET )
     {
         int nAddrLen = sizeof(struct sockaddr_in);
-        rcvStatus = recvfrom(pSocket->socket_des, buf, nLen, flags, (struct sockaddr*)&pRcvAddr->addr_ip4, &nAddrLen );
+        rcvStatus = recvfrom(pSocket->socket_des, buf, nLen, flags, (struct sockaddr*)&pRcvAddr->addr_ip4, (socklen_t*)&nAddrLen );
 		pRcvAddr->ipstr = &pRcvAddr->addr_ip4.sin_addr;
     }
     else
     {
         int nAddrLen = sizeof(struct sockaddr_in6);
-        rcvStatus = recvfrom(pSocket->socket_des, buf, nLen, flags, (struct sockaddr*)&pRcvAddr->addr_ip6, &nAddrLen );
+        rcvStatus = recvfrom(pSocket->socket_des, buf, nLen, flags, (struct sockaddr*)&pRcvAddr->addr_ip6, (socklen_t*)&nAddrLen );
 		pRcvAddr->ipstr = &pRcvAddr->addr_ip6.sin6_addr;
     }
     

@@ -2,12 +2,10 @@
 #
 # Generic makefile mould
 #
-# Copyright (c) 2005 Pomelo Corp.
+# Copyright (c) 2017 Pomelo Corp.
 # All rights reserved.
 #
 ######################################
-PWD := `pwd`
-DIRECTORY := `basename $$PWD`
 
 PROGRAMS := libPomeloBase.a
 
@@ -32,11 +30,12 @@ ifeq ($(CROSS_COMPILE_PLATFORM),android)
 else ifeq ($(CROSS_COMPILE_PLATFORM),mac)
 	CROSS_COMPILE_BIN = ../lib/mac      
 else ifeq ($(CROSS_COMPILE_PLATFORM),linux)
-	CROSS_COMPILE_BIN = ../lib/linux           
+	CROSS_COMPILE_BIN = ../lib/linux
+	CFLAGS += -D_EVENT_HAVE_FD_MASK -D_GNU_SOURCE 
 endif
 
 ###############################################################
-#check bin&&lib dir is created
+#check bin && lib dir is created
 ifneq ($(CROSS_COMPILE_PLATFORM),)
     ifneq ($(wildcard $(CROSS_COMPILE_BIN)),)
         MDBIN :=
@@ -71,25 +70,25 @@ CXXFLAGS := $(CFLAGS)
 
 
 ################################################################
-#init source code need to be compiled
-SRC := ./src
-JSONC := ./jsonc
-
-
 # You shouldn't need to change anything below this point.
 #SOURCE := $(wildcard *.c)
-SOURCE := $(shell find $(SRC) -name '*.c')
-SOURCE += $(shell find $(JSONC) -name '*.c')
+SOURCE := $(wildcard ./src/*.c)
+SOURCE += $(wildcard .jsonc/*.c)
 
 OBJS := $(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(SOURCE)))
 
-.PHONY : $(PROGRAMS)
+DEPENDINFO := .depend
+
+.PHONY : ALL
+
+ALL : $(DEPENDINFO) $(PROGRAMS) 
+
+$(DEPENDINFO) : $(SOURCE)
+	$(CC) $(CFLAGS) -M $^ > $@
 
 $(PROGRAMS): $(OBJS)
-	$(CC) $(SOURCE) $(CFLAGS)
-	$(AR) -r $(PROGRAMS) $(OBJS)
-	@-cp -vuf $(PROGRAMS) $(CROSS_COMPILE_BIN)    
-
+	$(AR) -r $@ $^
+	@-cp -vuf $(PROGRAMS) $(CROSS_COMPILE_BIN)
 
 ########################################################
 .PHONY : clean distclean

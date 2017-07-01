@@ -258,7 +258,7 @@ int	win32_dispatch( IMeSocketEventSelectListener* pSelectListener, struct timeva
 	unsigned i;
 	int fd_count;
 	IMeSocket* s;
-	HSOCKET fd;
+	int fd;
 	
 	fd_set_copy(win32op->readset_out, win32op->readset_in);
 	fd_set_copy(win32op->writeset_out, win32op->writeset_in);

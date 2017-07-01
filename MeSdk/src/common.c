@@ -91,7 +91,7 @@ IME_EXTERN_C  char   IMeCreateDirectory( const char* pDir )
 
 IME_EXTERN_C int	IMeFileIsDir( const char* pPath )
 {
-	uint dwAttr = GetFileAttributes(pPath);
+	uint32_t dwAttr = GetFileAttributes(pPath);
 
 	if( -1 == dwAttr )
 		return -1;
@@ -126,7 +126,7 @@ IME_EXTERN_C uint64_t  IMeGetFileSize( const char* pFilePathName )
     {
 		uint32_t highSize = 0;
         uint32_t lowSize = GetFileSize( handle, &highSize );
-		llSize = (uint64)highSize<<32|lowSize;
+		llSize = (uint64_t)highSize<<32|lowSize;
         CloseHandle(handle);
     }
 	
@@ -342,7 +342,7 @@ IME_EXTERN_C void    IMeCreateGUID( char* szGuid )
     if( !szGuid )   return;
     
     UuidCreate( &guid );
-    UuidToString( &guid, (uchar**)&pszGuid );
+    UuidToString( &guid, (uint8_t**)&pszGuid );
     
     while( pszGuid[i]!='\0' )
     {
@@ -354,7 +354,7 @@ IME_EXTERN_C void    IMeCreateGUID( char* szGuid )
             szGuid[i] = pszGuid[i];
         i++;
     }
-    RpcStringFree((uchar**)&pszGuid);
+    RpcStringFree((uint8_t**)&pszGuid);
 }
 
 IME_EXTERN_C uint32_t    IMeGetCurrentTime()
@@ -362,7 +362,7 @@ IME_EXTERN_C uint32_t    IMeGetCurrentTime()
     return timeGetTime();
 }
 
-IME_EXTERN_C void    IMeSleep( uint dwMiliseconds )
+IME_EXTERN_C void    IMeSleep( uint32_t dwMiliseconds )
 {
     Sleep( dwMiliseconds );
 }
@@ -409,7 +409,7 @@ IME_EXTERN_C uint64_t  IMeGetFileSize( const char* pFilePathName )
 	pFile = fopen( pFilePathName, "r" );
 	if( pFile && (fd = fileno( pFile )) )
 	{
-		fstat( fd , &filestat );
+		fstat64( fd , &filestat );
 		llSize += filestat.st_size;
 		fclose(pFile);
 	}
@@ -587,13 +587,13 @@ IME_EXTERN_C uint64_t IMeGetHardDiskSize( const char* szDiskPath )
     statfs( szDiskPath , &diskInfo ); 
     uint64_t blocksize = diskInfo.f_bsize;
     uint64_t totalsize = blocksize * diskInfo.f_blocks;
-//     printf("Total_size = %llu B = %llu KB = %llu MB = %llu GB\n", 
-//         totalsize, totalsize>>10, totalsize>>20, totalsize>>30); 
+    DebugLogString( TRUE, "[IMeGetHardDiskSize] Total_size = %llu B = %llu KB = %llu MB = %llu GB\n", 
+        totalsize, totalsize>>10, totalsize>>20, totalsize>>30 ); 
       
     uint64_t freeDisk = diskInfo.f_bfree * blocksize; 
     uint64_t availableDisk = diskInfo.f_bavail * blocksize; 
-//     printf("Disk_free = %llu MB = %llu GB\nDisk_available = %llu MB = %llu GB\n", 
-//         freeDisk>>20, freeDisk>>30, availableDisk>>20, availableDisk>>30); 
+    DebugLogString( TRUE, "[IMeGetHardDiskSize] Disk_free = %llu MB = %llu GB\nDisk_available = %llu MB = %llu GB\n", 
+        freeDisk>>20, freeDisk>>30, availableDisk>>20, availableDisk>>30); 
     
     return availableDisk>>20; 
 #endif

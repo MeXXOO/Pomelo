@@ -28,7 +28,7 @@
 /* 系统头文件 */
 #include    <winsock2.h>
 #include    <windows.h>
-#include    <tlhelp32.h>com
+#include    <tlhelp32.h>
 #include    <direct.h>  
 #include    <io.h> 
 
@@ -69,10 +69,12 @@ typedef     unsigned __int64    uint64_t;
 #include    <linux/tcp.h>
 #include    <sys/types.h>
 #include    <sys/stat.h>
+#include    <sys/statfs.h>
 #include 	<sys/ioctl.h>
 #include    <sys/socket.h>
 #include    <pthread.h>
 #include 	<errno.h>
+#include 	<ctype.h>
 
 /* android platform */
 #ifndef		PROJECT_FOR_ANDROID
