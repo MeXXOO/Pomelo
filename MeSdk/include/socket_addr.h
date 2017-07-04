@@ -46,8 +46,8 @@ struct _socket_addr_t_
     socket_addr_t*  next;                //more than one net device
 };
 
-uint8_t inet_ntop( int af, const void *src, char *dst, int size );
-char    inet_pton( int af, const char *src, void *dst );
+uint8_t pom_inet_ntop( int af, const void *src, char *dst, int size );
+char    pom_inet_pton( int af, const char *src, void *dst );
 
 uint8_t   	socket_addr_init( socket_addr_t* socket_addr , char* ipaddress , uint16_t port , uint16_t family );
 uint8_t   	socket_addr_init_byaddr( socket_addr_t* socket_addr , void* addr , uint16_t family );

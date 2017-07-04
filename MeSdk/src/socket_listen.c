@@ -69,8 +69,13 @@ IME_EXTERN_C void	IMeListenSocketDispatchUserRcv( IMeSocketDispatchUser* pSocket
 		return;
 
 	/* 创建tcp套接字并启用 */
-	if( !IMeCListenSocketCreateNew( pSocketListen , CSocketGetAddrType(pSocketListen->m_pSocket,FALSE) , socket_des , &addr_remote ) )
-		closesocket(socket_des);
+  if( !IMeCListenSocketCreateNew( pSocketListen , CSocketGetAddrType(pSocketListen->m_pSocket,FALSE) , socket_des , &addr_remote ) ){
+#ifdef PROJECT_FOR_IOS
+    close(socket_des);
+#else
+    closesocket(socket_des);
+#endif
+  }
 }
 
 IME_EXTERN_C void	IMeListenSocketDispatchUserSend( IMeSocketDispatchUser* pSocketDispatchUser )
