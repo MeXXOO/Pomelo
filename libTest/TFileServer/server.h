@@ -11,7 +11,7 @@
 
 typedef	struct _IMeFileServer
 {
-	uint8	m_bRunning;
+	uint8_t	m_bRunning;
 
 	int		m_nTransferProtocolType;
 
@@ -39,7 +39,7 @@ typedef	struct _IMeFileServer
 }IMeFileServer;
 
 IME_EXTERN_C	void	IMeFileServerDestroy( IMeFileServer* pFileServer );
-IME_EXTERN_C	IMeFileServer*	IMeFileServerCreate( int nTransferProtocolType, char* ipStr , ushort port , ushort family , char* pFileStoreDir );
-IME_EXTERN_C	int		IMeFileServerSendData( IMeFileServer* pFileServer, void* pFileSource, char* buffer, int len );
+IME_EXTERN_C	IMeFileServer*	IMeFileServerCreate( int nTransferProtocolType, char* ipStr , uint16_t port , uint16_t family , char* pFileStoreDir );
+IME_EXTERN_C	int		IMeFileServerSendData( IMeFileServer* pFileServer, void* pFileSource, uint8_t* buffer, int len );
 
 #endif		//end _I_ME_FILE_SERVER_H_

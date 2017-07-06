@@ -59,7 +59,7 @@ IME_EXTERN_C  char   IMeCreateDirectory( const char* pDir )
     
     for( i = 0; i < iLen; i++ )  
     {  
-        if( pszDir[i] == FILE_PATH_SEPARATE )  
+        if( pszDir[i] == FILE_PATH_SEPARATE && i != 0/* ignore start pos separate */ )  
         {   
             pszDir[i] = '\0';  
             
@@ -68,8 +68,10 @@ IME_EXTERN_C  char   IMeCreateDirectory( const char* pDir )
             if( iRet != 0 )  
             {  
                 iRet = MKDIR(pszDir);  
-                if (iRet != 0)  
+                if (iRet != 0)
+                {    
                     return FALSE;  
+                }
             }  
             //recover  
             pszDir[i] = FILE_PATH_SEPARATE;  
@@ -77,7 +79,7 @@ IME_EXTERN_C  char   IMeCreateDirectory( const char* pDir )
     }  
     
     iRet = ACCESS(pszDir,0);
-    if( iRet != 0 )
+    if( iRet != 0 )    
         iRet = MKDIR(pszDir);
 
     free(pszDir);
@@ -375,7 +377,7 @@ IME_EXTERN_C int	IMeFileIsDir( const char* pPath )
     
     if( lstat(pPath, &S_stat)<0 )  
     {  
-        return FALSE;  
+        return -1;  
     }  
     
     if( S_ISDIR(S_stat.st_mode) )  

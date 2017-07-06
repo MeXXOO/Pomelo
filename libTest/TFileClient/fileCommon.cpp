@@ -1,6 +1,6 @@
 #include	"fileCommon.h"
 
-IME_EXTERN_C	IMeTFileInfo*	IMeTFileInfoCreate( const char* pFileName , uint64 llFileSize , uint nFileID )
+IME_EXTERN_C	IMeTFileInfo*	IMeTFileInfoCreate( const char* pFileName , uint64_t llFileSize , uint32_t nFileID )
 {
 	IMeTFileInfo* pTFileInfo = (IMeTFileInfo*)calloc(1,sizeof(IMeTFileInfo));
 	if( pTFileInfo )
@@ -29,7 +29,7 @@ IME_EXTERN_C	void	IMeTFileSourceReleaseFileList( IMeArray* arrFile )
 {
 	IMeTFileInfo* pTfileInfo;
 
-	while( pTfileInfo = (IMeTFileInfo*)CArrayRemoveAt(arrFile,0) )
+	while( (pTfileInfo = (IMeTFileInfo*)CArrayRemoveAt(arrFile,0)) )
 	{
 		IMeTFileInfoDestroy( pTfileInfo );	
 	}
@@ -41,8 +41,8 @@ IME_EXTERN_C	void	IMeTFileSourceReleaseFileList( IMeArray* arrFile )
 IME_EXTERN_C    void     IMeTFileSourceStatisticTransferRate( IMeTFileSource* pFileSource )
 {
     int i;
-    uint64 totalSize = 0;
-    uint dwUseTime;
+    uint64_t totalSize = 0;
+    uint32_t dwUseTime;
 
     for( i = 0; i<CArrayGetSize(pFileSource->m_arrFile); i++ )
     {
@@ -56,12 +56,12 @@ IME_EXTERN_C    void     IMeTFileSourceStatisticTransferRate( IMeTFileSource* pF
     if( totalSize >= 10*1024*1024 )
     {
         totalSize = totalSize>>20;
-        DebugLogString( TRUE, "[IMeTFileSourceStatisticTransferRate] totalSize:%uMB usetime:%us %.2fMB/s", (uint)totalSize, dwUseTime/1000, ((uint)totalSize*1000)*1.0 / dwUseTime );
+        DebugLogString( TRUE, "[IMeTFileSourceStatisticTransferRate] totalSize:%uMB usetime:%us %.2fMB/s", (uint32_t)totalSize, dwUseTime/1000, ((uint32_t)totalSize*1000)*1.0 / dwUseTime );
     }
     else
     {
         totalSize = totalSize>>10;
-        DebugLogString( TRUE, "[IMeTFileSourceStatisticTransferRate] totalSize:%uKB/s usetime:%us %.2fKB/s", (uint)totalSize, dwUseTime/1000, ((uint)totalSize*1000)*1.0 / dwUseTime );
+        DebugLogString( TRUE, "[IMeTFileSourceStatisticTransferRate] totalSize:%uKB/s usetime:%us %.2fKB/s", (uint32_t)totalSize, dwUseTime/1000, ((uint32_t)totalSize*1000)*1.0 / dwUseTime );
     }
 }
 

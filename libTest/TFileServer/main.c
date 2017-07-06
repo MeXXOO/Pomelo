@@ -1,7 +1,8 @@
 #include    "include.h"
 #include	"server.h"
 
-#ifdef	WIN32
+//////////////work windows platform//////////////
+#ifdef	PROJECT_FOR_WINDOWS
 
 #pragma		comment( lib , "winmm.lib" )
 
@@ -13,6 +14,16 @@
 
 #define		FILE_STORE_DIR	"F:\\qinxin\\GG\\libTest\\servercourse\\"
 
+//////////////work android platform///////////////
+#elif		defined(PROJECT_FOR_ANDROID)
+
+#define		FILE_STORE_DIR	"/sdcard"
+
+/////////////work linux platform//////////////////
+#else
+
+#define		FILE_STORE_DIR	"/mnt/hgfs/E/servercourse"
+
 #endif
 
 
@@ -21,6 +32,7 @@ int main( int argc, char* argv[] )
 	IMeFileServer* tcpServer;
 	int protocolStart;
 	char szProtocolFileDir[256];
+	int8_t bIsDirExist = FALSE;
 
 #ifdef	WIN32
     WORD wVersionRequested;
@@ -51,7 +63,9 @@ int main( int argc, char* argv[] )
 
 	DebugLogString( TRUE , "[main] server protocol:%d[1:udp][2:tcp] file save dir:%s!!" , protocolStart , szProtocolFileDir );
 
-    if( !IMeCreateDirectory( szProtocolFileDir ) )
+	bIsDirExist = (-1 != IMeFileIsDir(szProtocolFileDir));
+
+    if( !bIsDirExist && !IMeCreateDirectory( szProtocolFileDir ) )
     {
         DebugLogString( TRUE , "[main] IMeCreateDirectory failed!!" );
         return -1;
@@ -60,7 +74,11 @@ int main( int argc, char* argv[] )
 	tcpServer = IMeFileServerCreate( protocolStart , "0.0.0.0" , 10000 , AF_INET , szProtocolFileDir );
 	if( !tcpServer )	goto END;
 
+#ifdef	PROJECT_FOR_WINDOWS
     system( "pause" );
+#else
+    while( TRUE ) IMeSleep(1000);
+#endif
 
 END:
 	IMeFileServerDestroy( tcpServer );

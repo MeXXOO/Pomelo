@@ -84,16 +84,17 @@ IME_EXTERN_C IMeLock*    IMeLockCreate()
     IMeCLock* pLock = (IMeCLock*)calloc(1,sizeof(IMeCLock));
     while( pLock )
     {
-        if( pthread_mutexattr_init( &pLock->mutex_attr ) !=0 )
+        if( pthread_mutexattr_init( &pLock->mutex_attr ) != 0 )
         {
             DebugLogString( TRUE , "[IMeCLockCreate] pthread_mutexattr_init failed!" );
             free(pLock);
             pLock = NULL;
             break;
         }
-        pthread_mutexattr_settype( &pLock->mutex_attr , PTHREAD_MUTEX_RECURSIVE_NP );    /* µÝ¹éËø */
+
+        pthread_mutexattr_settype( &pLock->mutex_attr , PTHREAD_MUTEX_RECURSIVE_NP );    /* åµŒå¥—é” */
         
-        if( !pthread_mutex_init( &pLock->mutex , &pLock->mutex_attr ) )
+        if( pthread_mutex_init( &pLock->mutex , &pLock->mutex_attr ) != 0 )
         {
             DebugLogString( TRUE , "[IMeCLockCreate] pthread_mutex_init failed!" );
             pthread_mutexattr_destroy( &pLock->mutex_attr );
@@ -105,6 +106,8 @@ IME_EXTERN_C IMeLock*    IMeLockCreate()
         ((IMeLock*)pLock)->m_pDestroy = IMeCLock_Destroy;
         ((IMeLock*)pLock)->m_pLock = IMeCLock_Lock;
         ((IMeLock*)pLock)->m_pUnlock = IMeCLock_Unlock;
+
+        break;
     }
     
     return (IMeLock*)pLock;

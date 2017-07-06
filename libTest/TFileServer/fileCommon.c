@@ -1,7 +1,7 @@
 #include	"fileCommon.h"
 #include	"server.h"
 
-IME_EXTERN_C	IMeTFileInfo*	IMeTFileInfoCreate( char* pFileName , uint64 llFileSize , uint nFileID )
+IME_EXTERN_C	IMeTFileInfo*	IMeTFileInfoCreate( char* pFileName , uint64_t llFileSize , uint32_t nFileID )
 {
 	IMeTFileInfo* pTFileInfo = (IMeTFileInfo*)calloc(1,sizeof(IMeTFileInfo));
 	if( pTFileInfo )

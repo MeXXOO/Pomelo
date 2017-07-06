@@ -3,7 +3,7 @@
 
 #define		SERVER_SOCKET_GROUP_CNT		1
 
-int OnFileSourceUserArrayKeyCompare( uint64 nKey1 , uint64 nKey2 , void* parameter )
+int OnFileSourceUserArrayKeyCompare( uint64_t nKey1 , uint64_t nKey2 , void* parameter )
 {
 	IMeFileServer* pFileServer = (IMeFileServer*)parameter;
 
@@ -18,8 +18,8 @@ int OnFileSourceUserArrayKeyCompare( uint64 nKey1 , uint64 nKey2 , void* paramet
 	}
 	else 
 	{
-		socket_addr_t* addr1 = (socket_addr_t*)nKey1;
-		socket_addr_t* addr2 = (socket_addr_t*)nKey2;
+		socket_addr_t* addr1 = (socket_addr_t*)(uint32_t)nKey1;
+		socket_addr_t* addr2 = (socket_addr_t*)(uint32_t)nKey2;
 
 		if( addr1->family == addr2->family )
 		{
@@ -68,7 +68,7 @@ IME_EXTERN_C	void    IMeFileServerListenSocketNewConnectCB( IMeSocket* pSocketCl
             CSocketTcpSetOpt( pTcpClient , SOCKET_SO_RCVBUF , 1024*1024 );
 
 			CLock_Lock( pFileServer->m_lockClient );
-			CArrayAdd( pFileServer->m_arrFileSourceClient , pTFileSourceUser , (uint64)pTcpClient );
+			CArrayAdd( pFileServer->m_arrFileSourceClient , pTFileSourceUser , (uint32_t)pTcpClient );
 			CLock_Unlock( pFileServer->m_lockClient );
 		}
 	}
@@ -86,7 +86,7 @@ IME_EXTERN_C	void    IMeFileServerUdpSocketNewCallCB( socket_addr_t* pUserAddr ,
 	DebugLogString( TRUE , "[IMeFileServerUdpSocketNewCallCB] new udp client connected!!" );
 	
 	CLock_Lock( pFileServer->m_lockClient );
-	pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData( pFileServer->m_arrFileSourceClient, (uint64)pUserAddr );
+	pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData( pFileServer->m_arrFileSourceClient, (uint32_t)pUserAddr );
 	CLock_Unlock( pFileServer->m_lockClient );
 
 	if( !pTFileSourceUser )
@@ -95,7 +95,7 @@ IME_EXTERN_C	void    IMeFileServerUdpSocketNewCallCB( socket_addr_t* pUserAddr ,
 		if( pTFileSourceUser )
 		{	
 			CLock_Lock( pFileServer->m_lockClient );
-			CArrayAdd( pFileServer->m_arrFileSourceClient , pTFileSourceUser , (uint64)pTFileSourceUser->m_pFileSource );
+			CArrayAdd( pFileServer->m_arrFileSourceClient , pTFileSourceUser , (uint32_t)pTFileSourceUser->m_pFileSource );
 			CLock_Unlock( pFileServer->m_lockClient );
 		}
 	}
@@ -124,7 +124,7 @@ IME_EXTERN_C	void	IMeFileServerReleaseClientData( IMeFileServer* pFileServer )
 
 	CLock_Lock( pFileServer->m_lockerClientData );
 	
-	while( pNetSrcData = CListRemoveHead(pFileServer->m_listClientData) )
+	while( ( pNetSrcData = CListRemoveHead(pFileServer->m_listClientData) ) )
 	{
 		IMeNetSrcDataDestroy( pNetSrcData );
 	}
@@ -177,7 +177,7 @@ IME_EXTERN_C	void	IMeFileServerDestroy( IMeFileServer* pFileServer )
 	}
 }
 
-IME_EXTERN_C	IMeFileServer*	IMeFileServerCreate( int nTransferProtocolType, char* ipStr , ushort port , ushort family , char* pFileStoreDir )
+IME_EXTERN_C	IMeFileServer*	IMeFileServerCreate( int nTransferProtocolType, char* ipStr , uint16_t port , uint16_t family , char* pFileStoreDir )
 {
 	IMeFileServer* pFileServer = (IMeFileServer*)calloc(1,sizeof(IMeFileServer));
 	

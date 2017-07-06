@@ -98,6 +98,8 @@ static void	IMeCSocketDispatchGroupWorkEventListenerOnNotify( short events , IMe
 
 	if( pSocketDispatchUser )
 	{
+		DebugLogString( TRUE , "[IMeCSocketDispatchGroupWorkEventListenerOnNotify] event:%d" , events );
+		
 		//has read event
 		if( events&SEvent_Read )
 		{

@@ -63,7 +63,7 @@ void CTFileClient::ReleaseFileInfoList()
 
 	CLock_Lock( m_lockerListFileSource );
 
-	while( pFileSource = (IMeTFileSource*)CListRemoveHead(m_listFileSource) )
+	while( (pFileSource = (IMeTFileSource*)CListRemoveHead(m_listFileSource)) )
 		IMeTFileSourceDestroy( pFileSource );
 
 	CLock_Unlock( m_lockerListFileSource );
@@ -75,7 +75,7 @@ void CTFileClient::SetCallBack( OnRcvTFileClientStatus CB , void* upApp )
 	m_upApp = upApp;
 }
 
-bool CTFileClient::Init( int nTransferProtocolType )
+uint8_t CTFileClient::Init( int nTransferProtocolType )
 {
 	DeInit();
 
@@ -124,13 +124,13 @@ void CTFileClient::DeInit()
 	}
 }
 
-void CTFileClient::StartUploadThead( boolean bStart )
+void CTFileClient::StartUploadThead( uint8_t bStart )
 {
 	//start upload
 	if( bStart && !m_bUploading )
 	{
 		m_bUploading = TRUE;
-		m_thread = CThreadCreate( TFileClientTheadUploadFile, this );
+		m_thread = CThreadCreate( (void*)TFileClientTheadUploadFile, this );
 	}
 	//stop upload
 	else if( !bStart && m_bUploading )
@@ -152,7 +152,7 @@ void CTFileClient::DisconnectServer()
     }
 }
 
-bool CTFileClient::ConnectServer( const char* pServerAddress , ushort port , int nAFFamily )
+uint8_t CTFileClient::ConnectServer( const char* pServerAddress , uint16_t port , int nAFFamily )
 {
 	if( !m_bRunning )
 		return FALSE;
@@ -162,7 +162,7 @@ bool CTFileClient::ConnectServer( const char* pServerAddress , ushort port , int
 
 	if( m_nTransferProtocolType == TFileProtocol_Tcp )
 	{
-		m_pTcpSocket = CSocketManagerCreateTcpSocket( m_pSocketManager , NULL , NULL , nAFFamily , 5000 , OnTcpClientSocketRcvDataCallBack , this );
+		m_pTcpSocket = CSocketManagerCreateTcpSocket( m_pSocketManager , NULL , 0 , nAFFamily , 5000 , OnTcpClientSocketRcvDataCallBack , this );
 		if( !m_pTcpSocket )	
 		{
 			DebugLogString( TRUE , "[CTFileClient::ConnectServer] CSocketManagerCreateTcpSocket failed!!" );
@@ -177,7 +177,7 @@ bool CTFileClient::ConnectServer( const char* pServerAddress , ushort port , int
 	}
     else if( m_nTransferProtocolType == TFileProtocol_Udp )
 	{
-		m_pUdpSocket = CSocketManagerCreateUdpSocket( m_pSocketManager , NULL , NULL , nAFFamily , 5000 , OnUdpClientSocketRcvDataCallBack , this );
+		m_pUdpSocket = CSocketManagerCreateUdpSocket( m_pSocketManager , NULL , 0 , nAFFamily , 5000 , OnUdpClientSocketRcvDataCallBack , this );
 		if( !m_pUdpSocket )	
 		{
 			DebugLogString( TRUE , "[CTFileClient::ConnectServer] CSocketManagerCreateUdpSocket failed!!" );
@@ -221,9 +221,9 @@ void CTFileClient::LoginServer( const char* pAccount , const char* pPassword )
 	SendTFileServerLoginUserInfo( this , pAccount , pPassword );
 }
 
-bool CTFileClient::CommitFileInfo( const char* pFilePath )
+uint8_t CTFileClient::CommitFileInfo( const char* pFilePath )
 {
-	uint64 llSize;
+	uint64_t llSize;
 	IMeTFileInfo* pTFileInfo;
 	char* pFileName;
 	char szUplevelFilePath[256];

@@ -7,7 +7,7 @@ IME_EXTERN_C	void	SendTFileServerLoginUserInfo( CTFileClient* pFileClient , cons
 {
 	char lpData[1024];
 	int nOff = 0;
-	uint ph = MAKE_TFILEH(TFILE_APP_CLIENT,TFILE_DFORMAT_JSON,TFILE_C2S_ACCOUNT_VERIFY);
+	uint32_t ph = MAKE_TFILEH(TFILE_APP_CLIENT,TFILE_DFORMAT_JSON,TFILE_C2S_ACCOUNT_VERIFY);
 
 	const char* pAccountString;
 	json_object* account_obj = NULL;
@@ -32,9 +32,9 @@ IME_EXTERN_C	void	SendTFileServerLoginUserInfo( CTFileClient* pFileClient , cons
 	json_object_put( account_obj );
 }
 
-IME_EXTERN_C	bool	SendTFileServerLocalFileInfo( CTFileClient* pFileClient , IMeTFileSource* pFileSource )
+IME_EXTERN_C	uint8_t	SendTFileServerLocalFileInfo( CTFileClient* pFileClient , IMeTFileSource* pFileSource )
 {
-	bool sndRes = FALSE;
+	uint8_t sndRes = FALSE;
 
 	char* lpData;
 	int nOff = 0;
@@ -247,7 +247,7 @@ IME_EXTERN_C	void	TFileClientTheadUploadFile( void* parameter )
 	CTFileClient* pTFileClient = (CTFileClient*)parameter;
 	
 	IMeTFileSource* pFileSource;
-	lposition listPos;
+	uint32_t listPos;
 
 	while( pTFileClient->m_bUploading )
 	{
@@ -260,7 +260,7 @@ IME_EXTERN_C	void	TFileClientTheadUploadFile( void* parameter )
 		//wait transfer next file source 
 		if( !pFileSource )
 		{
-			Sleep(10);	
+			IMeSleep(10);	
 			continue;
 		}
 
@@ -276,7 +276,7 @@ IME_EXTERN_C	void	TFileClientTheadUploadFile( void* parameter )
 			}
 			else
 			{
-				Sleep(10);
+				IMeSleep(10);
 			}
 		}
 		//snd data
@@ -326,11 +326,11 @@ IME_EXTERN_C	void	TFileClientTheadUploadFile( void* parameter )
 
 IME_EXTERN_C	void	OnTFileClientProtocolRcvFileEndAck( CTFileClient* pFileClient , json_object* tfileEndAckObj , void* rcvSource )
 {
-	lposition listPos;
+	uint32_t listPos;
 
 	int nFileID;
-	int64 serverFileOffset;
-	int64 serverFileSize;
+	int64_t serverFileOffset;
+	int64_t serverFileSize;
 
 	IMeTFileSource* pTFileSource;
 	
@@ -341,7 +341,7 @@ IME_EXTERN_C	void	OnTFileClientProtocolRcvFileEndAck( CTFileClient* pFileClient 
 	{
 		if( json_object_object_get_int( tfileEndAckObj , "fileID" , &nFileID ) )
 		{
-			IMeTFileInfo* pTFileInfo = (IMeTFileInfo*)CArrayFindData( pTFileSource->m_arrFile , (int64)nFileID );
+			IMeTFileInfo* pTFileInfo = (IMeTFileInfo*)CArrayFindData( pTFileSource->m_arrFile , (int64_t)nFileID );
 			if( pTFileInfo )
 			{
 				//current file is uploaded , synchronous file upload status with server
@@ -397,7 +397,7 @@ IME_EXTERN_C	void	OnTFileClientProtocolRcvFileStartAck( CTFileClient* pFileClien
 {
 	int nFileID;
 	
-	lposition listPos;
+	uint32_t listPos;
 	IMeTFileSource* pTFileSource;
 		
 	CLock_Lock( pFileClient->m_lockerListFileSource );
@@ -407,7 +407,7 @@ IME_EXTERN_C	void	OnTFileClientProtocolRcvFileStartAck( CTFileClient* pFileClien
 	{
 		if( json_object_object_get_int( tfileStartAckObj , "fileID" , &nFileID ) )
 		{
-			IMeTFileInfo* pTFileInfo = (IMeTFileInfo*)CArrayFindData( pTFileSource->m_arrFile , (int64)nFileID );
+			IMeTFileInfo* pTFileInfo = (IMeTFileInfo*)CArrayFindData( pTFileSource->m_arrFile , (int64_t)nFileID );
 			if( pTFileInfo )
 			{
 				pTFileSource->m_nCurUploadFileID = nFileID;
@@ -432,7 +432,7 @@ IME_EXTERN_C	void	OnTFileClientProtocolRcvFileStartAck( CTFileClient* pFileClien
 IME_EXTERN_C	void	OnTFileClientProtocolRcvFilesInfoAck( CTFileClient* pFileClient , json_object* tfileFilesInfoAckObj , void* rcvSource )
 {
 	IMeTFileSource* pTFileSource;
-	lposition listPos;
+	uint32_t listPos;
 
 	CLock_Lock( pFileClient->m_lockerListFileSource );
 
@@ -468,7 +468,7 @@ IME_EXTERN_C	void	OnTFileClientProtocolRcvAccountVerifyAck( CTFileClient* pFileC
 }
 
 /* json cmd from client */
-IME_EXTERN_C	void	OnTFileClientProtocolRcvJsonCmd( CTFileClient* pFileClient , uint tfilePH , char* lpData , int nLen )
+IME_EXTERN_C	void	OnTFileClientProtocolRcvJsonCmd( CTFileClient* pFileClient , uint32_t tfilePH , char* lpData , int nLen )
 {
 	int nCmd = TFILEH_CMD(tfilePH);
 	int nOff = 4;	/* ph-4byte */
@@ -501,7 +501,7 @@ IME_EXTERN_C	void	OnTFileClientProtocolRcvJsonCmd( CTFileClient* pFileClient , u
 }
 
 /* binary data from client */
-IME_EXTERN_C	void	OnTFileClientProtocolRcvBinary( CTFileClient* pFileClient , uint tfilePH , char* lpData , int nLen )
+IME_EXTERN_C	void	OnTFileClientProtocolRcvBinary( CTFileClient* pFileClient , uint32_t tfilePH , char* lpData , int nLen )
 {
 	//this interface no use for upload file client
 }
@@ -527,7 +527,7 @@ IME_EXTERN_C	void	OnFileClientProtocolRcvServerData( CTFileClient* pFileClient ,
 	if( NULL != lpData && nLen > 0 )
 	{
 		int nOff = 0;
-		uint ph = *(uint*)&lpData[nOff];	
+		uint32_t ph = *(uint*)&lpData[nOff];	
 		int nFormat = TFILEH_DFORMAT(ph);
 		int nAppClient = TFILEH_APP(ph);
 		
