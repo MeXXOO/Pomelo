@@ -8,6 +8,7 @@
 
 #endif
 
+
 static char  inet_pton4(const char *src, uint8_t *dst)
 {
 	static const char digits[] = "0123456789";
@@ -21,7 +22,7 @@ static char  inet_pton4(const char *src, uint8_t *dst)
 		const char *pch;
 
 		if ((pch = strchr(digits, ch)) != NULL) {
-			uint32_t new = *tp * 10 + (pch - digits);
+			uint32_t new = (uint32_t)(*tp * 10 + (pch - digits));
 
 			if (new > 255)
 				return (0);
@@ -114,7 +115,7 @@ static char  inet_pton6(const char *src, uint8_t *dst)
 		 * Since some memmove()'s erroneously fail to handle
 		 * overlapping regions, we'll do the shift by hand.
 		 */
-		const int n = tp - colonp;
+		const uint8_t n = tp - colonp;
 		int i;
 
 		for (i = 1; i <= n; i++) {
@@ -252,7 +253,7 @@ static uint8_t inet_ntop6(const uint8_t *src, char *dst, int size)
         /* Is this address an encapsulated IPv4? */
         if (i == 6 && best.base == 0 &&
             (best.len == 6 || (best.len == 5 && words[5] == 0xffff))) {
-            if (!inet_ntop4(src+12, tp, sizeof tmp - (tp - tmp))) {
+            if (!inet_ntop4(src+12, tp, (int)(sizeof tmp - (tp - tmp)))) {
                 return FALSE;
             }
             tp += strlen(tp);

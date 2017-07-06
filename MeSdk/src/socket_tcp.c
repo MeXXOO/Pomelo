@@ -62,7 +62,7 @@ void	IMeTcpSocketDispatchUserSend( IMeSocketDispatchUser* pSocketDispatchUser )
 	
 	IMeTcpDataPacket*	pDataPacket;
 	
-	int nRes;
+	POMInteger nRes = 0;
 	int nRemainLen;
 
 	do{
@@ -119,7 +119,7 @@ void	IMeTcpSocketDispatchUserSend( IMeSocketDispatchUser* pSocketDispatchUser )
 void	IMeTcpSocketDispatchUserRcv( IMeSocketDispatchUser* pSocketDispatchUser )
 {
 	IMeCSocketTcp* pSocketTcp = (IMeCSocketTcp*)pSocketDispatchUser;
-	int nRes;
+	POMInteger nRes;
 	
 	IMeTcpDataPacket* pCacheDataPacket = &pSocketTcp->m_RcvCachePacket;
     

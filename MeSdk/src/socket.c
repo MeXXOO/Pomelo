@@ -34,7 +34,8 @@ char	IsConnectBlocked(DWORD dwErrorCode)
 #define         SOCKET_CONNECT_PROGRESS   EINPROGRESS
 #define         NET_SOCKET_ERROR          -1
 #define         NET_INVALIDSOCKET         -1
-#define         ioctlsocket(a,b,c)        (ioctl(a,b,c))  
+#define         ioctlsocket(a,b,c)        (ioctl(a,b,c))
+#define         closesocket(a)          close(a)
 
 IME_EXTERN_C char*	ConvertErrorCodeToString(uint32_t ErrorCode) 
 {
@@ -57,6 +58,7 @@ char	IsConnectBlocked(int nErrorCode)
 #define         NET_SOCKET_ERROR          -1
 #define         SOCKET_CONNECT_PROGRESS   EINPROGRESS
 #define         NET_INVALIDSOCKET         -1
+#define         closesocket(a)          close(a)
 
 IME_EXTERN_C char*	ConvertErrorCodeToString(uint32_t ErrorCode)
 {
@@ -690,10 +692,10 @@ uint8_t    IMeCSocketAccept( IMeSocket* pISocket , socket_addr_t* pRemoteAddr , 
 //////////////////////////////////////////////////////////////////////////
 //************************ socket net opt rcv/snd **********************//
 //////////////////////////////////////////////////////////////////////////
-int     IMeCSocketSend( IMeSocket* pISocket , char* data , int nLen , int flags )
+POMInteger     IMeCSocketSend( IMeSocket* pISocket , char* data , int nLen , int flags )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
-    int   sendStatus = 0;
+    POMInteger   sendStatus = 0;
     
     sendStatus = send(pSocket->socket_des, data, nLen, flags);
     if( sendStatus==NET_SOCKET_ERROR )
@@ -707,10 +709,10 @@ int     IMeCSocketSend( IMeSocket* pISocket , char* data , int nLen , int flags 
     return sendStatus;
 }
 
-int    IMeCSocketSendTo( IMeSocket* pISocket , char* szIP , uint16_t nPort , uint16_t family , char* data , int nLen , int flags )
+POMInteger    IMeCSocketSendTo( IMeSocket* pISocket , char* szIP , uint16_t nPort , uint16_t family , char* data , int nLen , int flags )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
-    int      sendStatus  = 0;
+    POMInteger      sendStatus  = 0;
     
     struct sockaddr* pRemoteAddress = NULL;
     int nRemoteAddressLen = 0;
@@ -760,10 +762,10 @@ int    IMeCSocketSendTo( IMeSocket* pISocket , char* szIP , uint16_t nPort , uin
     return sendStatus;
 }
 
-int    IMeCSocketSendToByAddr( IMeSocket* pISocket , socket_addr_t* pSendAddr , char* data , int nLen , int flags )
+POMInteger    IMeCSocketSendToByAddr( IMeSocket* pISocket , socket_addr_t* pSendAddr , char* data , int nLen , int flags )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
-    int      sendStatus  = 0;
+    POMInteger      sendStatus  = 0;
 
     struct sockaddr* pRemoteAddress = NULL;
     int nRemoteAddressLen = 0;
@@ -791,11 +793,10 @@ int    IMeCSocketSendToByAddr( IMeSocket* pISocket , socket_addr_t* pSendAddr , 
     return sendStatus;
 }
 
-int    IMeCSocketRecv( IMeSocket* pISocket , char* buf , int nLen , int flags )
+POMInteger IMeCSocketRecv( IMeSocket* pISocket , char* buf , int nLen , int flags )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
-    int  rcvStatus = 0;
-    
+    POMInteger rcvStatus =0;
     rcvStatus = recv( pSocket->socket_des, buf, nLen, flags );
 
 	if( rcvStatus<=0 )
@@ -818,11 +819,11 @@ int    IMeCSocketRecv( IMeSocket* pISocket , char* buf , int nLen , int flags )
     return rcvStatus;
 }
 
-int    IMeCSocketRecvFrom( IMeSocket* pISocket , char* buf , int nLen , int flags )
+POMInteger   IMeCSocketRecvFrom( IMeSocket* pISocket , char* buf , int nLen , int flags )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
-    int  rcvStatus = 0;
-    
+  POMInteger  rcvStatus = 0;
+  
     if( pSocket->local_addr->family==AF_INET )
     {
         int nAddrLen = sizeof(struct sockaddr_in);
@@ -845,11 +846,10 @@ int    IMeCSocketRecvFrom( IMeSocket* pISocket , char* buf , int nLen , int flag
     return rcvStatus;
 }
 
-int    IMeCSocketRecvFromByAddr( IMeSocket* pISocket , char* buf , int nLen , socket_addr_t* pRcvAddr , int flags )
+POMInteger IMeCSocketRecvFromByAddr( IMeSocket* pISocket , char* buf , int nLen , socket_addr_t* pRcvAddr , int flags )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
-    int  rcvStatus = 0;
-    
+  POMInteger  rcvStatus = 0;
 	pRcvAddr->family = pSocket->local_addr->family;
     if( pSocket->local_addr->family==AF_INET )
     {
@@ -885,11 +885,7 @@ void   IMeCSocketDestroy( IMeSocket* pISocket )
     if( pSocket )
     {
         if( pSocket->socket_des!=NET_INVALIDSOCKET )
-#ifdef PROJECT_FOR_IOS
-          close(pSocket->socket_des);
-#else
             closesocket(pSocket->socket_des);
-#endif
         if( pSocket->local_addr )
             free( pSocket->local_addr );
         if( pSocket->remote_addr )
@@ -903,11 +899,7 @@ void   IMeCSocketClose( IMeSocket* pISocket )
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
     if( pSocket->socket_des!=NET_INVALIDSOCKET )
     {
-#ifdef PROJECT_FOR_IOS
-      close(pSocket->socket_des);
-#else
         closesocket(pSocket->socket_des);
-#endif
         pSocket->socket_des = NET_INVALIDSOCKET;
     }
 }

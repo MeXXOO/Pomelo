@@ -14,9 +14,7 @@
 #define         SOCKET_SO_RCVBUF        128  /**< Receive buffer */
 #define         SOCKET_SO_DISCONNECTED  256  /**< Disconnected */
 #define         SOCKET_TCP_NODELAY      512  /**< For SCTP sockets, this is mapped*/
-#ifdef          PROJECT_FOR_LINUX
-#define         closesocket(a)          close(a)
-#endif
+
 
 /* mtu define */
 #define     ETHERNET_TCP_MTU_SIZE    1460
@@ -47,12 +45,12 @@ typedef uint8_t         (*IMeSocketBind)( IMeSocket* pISocket );
 typedef uint8_t         (*IMeSocketListen)( IMeSocket* pISocket , int backlog );
 typedef uint8_t         (*IMeSocketAccept)( IMeSocket* pISocket , socket_addr_t* pRemoteAddr , int* socket_des );
 
-typedef int           (*IMeSocketSend)( IMeSocket* pISocket , char* data , int nLen , int flags );
-typedef int           (*IMeSocketSendToByAddr)( IMeSocket* pISocket , socket_addr_t* pSendAddr , char* data , int nLen , int flags );
-typedef int           (*IMeSocketSendTo)( IMeSocket* pISocket , char* szIP , uint16_t nPort , uint16_t family , char* data , int nLen , int flags );
-typedef int           (*IMeSocketRecv)( IMeSocket* pISocket , char* buf , int nLen , int flags );
-typedef int           (*IMeSocketRecvFrom)( IMeSocket* pISocket , char* buf , int nLen , int flags );
-typedef int           (*IMeSocketRecvFromByAddr)( IMeSocket* pISocket , char* buf , int nLen , socket_addr_t* pRcvAddr , int flags );
+typedef POMInteger           (*IMeSocketSend)( IMeSocket* pISocket , char* data , int nLen , int flags );
+typedef POMInteger           (*IMeSocketSendToByAddr)( IMeSocket* pISocket , socket_addr_t* pSendAddr , char* data , int nLen , int flags );
+typedef POMInteger           (*IMeSocketSendTo)( IMeSocket* pISocket , char* szIP , uint16_t nPort , uint16_t family , char* data , int nLen , int flags );
+typedef POMInteger           (*IMeSocketRecv)( IMeSocket* pISocket , char* buf , int nLen , int flags );
+typedef POMInteger           (*IMeSocketRecvFrom)( IMeSocket* pISocket , char* buf , int nLen , int flags );
+typedef POMInteger           (*IMeSocketRecvFromByAddr)( IMeSocket* pISocket , char* buf , int nLen , socket_addr_t* pRcvAddr , int flags );
 
 typedef uint8_t         (*IMeSockeSetTimeOut)(IMeSocket *socket, int new_t);
 typedef int           (*IMeSocketGetOpt)( IMeSocket* pISocket , int opt );

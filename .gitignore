@@ -12,3 +12,4 @@ TSlaver/
 *.plg
 *.tmp
 .depend
+TestMakeFile

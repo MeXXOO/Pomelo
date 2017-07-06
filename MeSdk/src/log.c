@@ -18,7 +18,11 @@ IME_EXTERN_C void	 DebugLogTime( char* buffer )
 IME_EXTERN_C void    DebugLogString( int bOut , char* format , ... )
 {
     char szInfo[2*1024] = { 0 };
+#ifdef PROJECT_FOR_IOS
+  size_t nLen = 0;
+#else
     int nLen = 0;
+#endif
     va_list argList;
     va_start(argList, format);
 
