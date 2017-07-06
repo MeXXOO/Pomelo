@@ -130,7 +130,7 @@ static char  inet_pton6(const char *src, uint8_t *dst)
 }
 
 
-char inet_pton(int af, const char *src, void *dst)
+char pom_inet_pton(int af, const char *src, void *dst)
 {
     switch (af) {
     case AF_INET:
@@ -285,7 +285,7 @@ static uint8_t inet_ntop6(const uint8_t *src, char *dst, int size)
     return TRUE;
 }
 
-uint8_t inet_ntop(int af, const void *src, char *dst, int size)
+uint8_t pom_inet_ntop(int af, const void *src, char *dst, int size)
 {
     switch (af) {
     case AF_INET:
@@ -316,7 +316,7 @@ uint8_t   socket_addr_init( socket_addr_t* socket_addr , char* ipaddress , uint1
         }
         else
         {
-            if( !inet_pton(AF_INET, ipaddress, &socket_addr->addr_ip4.sin_addr) )
+            if( !pom_inet_pton(AF_INET, ipaddress, &socket_addr->addr_ip4.sin_addr) )
             {
                 DebugLogString( TRUE , "[socket_addr_init] inet_pton ipv4 address:%s failed!!" , ipaddress );
             }
@@ -336,7 +336,7 @@ uint8_t   socket_addr_init( socket_addr_t* socket_addr , char* ipaddress , uint1
         }
         else
         {
-            if( !inet_pton(AF_INET6, ipaddress, &socket_addr->addr_ip6.sin6_addr) )
+            if( !pom_inet_pton(AF_INET6, ipaddress, &socket_addr->addr_ip6.sin6_addr) )
             {
                 DebugLogString( TRUE , "[socket_addr_init] inet_pton ipv6 address:%s failed!!" , ipaddress );
             }
@@ -377,11 +377,11 @@ char*	socket_addr_ipaddr( socket_addr_t* socket_addr )
 
 	if( socket_addr->family==AF_INET && sizeof(socket_addr->ipBuf)/sizeof(socket_addr->ipBuf[0]) >= IN4ADDRSTRSZ )
 	{
-		bRet = inet_ntop( AF_INET , socket_addr->ipstr , socket_addr->ipBuf , 64 );
+		bRet = pom_inet_ntop( AF_INET , socket_addr->ipstr , socket_addr->ipBuf , 64 );
 	}
 	else if( socket_addr->family==AF_INET6 && sizeof(socket_addr->ipBuf)/sizeof(socket_addr->ipBuf[0]) >= IN6ADDRSTRSZ )
 	{
-		bRet = inet_ntop( AF_INET6 , socket_addr->ipstr , socket_addr->ipBuf , 64 );
+		bRet = pom_inet_ntop( AF_INET6 , socket_addr->ipstr , socket_addr->ipBuf , 64 );
 	}
 	
 	return bRet ? socket_addr->ipBuf : NULL;

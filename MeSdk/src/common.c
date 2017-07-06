@@ -5,7 +5,10 @@
 #define MKDIR(a) _mkdir((a))  
 #elif PROJECT_FOR_LINUX  
 #define ACCESS access  
-#define MKDIR(a) mkdir((a),0755)  
+#define MKDIR(a) mkdir((a),0755)
+#elif PROJECT_FOR_IOS
+#define ACCESS access
+#define MKDIR(a) mkdir((a),0755)
 #endif 
 
 IME_EXTERN_C char*   IMeCopyString( const char* pString )

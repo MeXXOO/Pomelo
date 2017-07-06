@@ -81,6 +81,8 @@ typedef     unsigned __int64    uint64_t;
 #include    <uuid/uuid.h>
 #endif
 
+
+
 #include    <time.h>
 #include    <stdarg.h>
 
@@ -93,9 +95,23 @@ typedef     unsigned __int64    uint64_t;
 //########################################################
 //########################################################
 
-
-
-
+#elif PROJECT_FOR_IOS
+#include <netinet/in.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <pthread.h>
+#include <errno.h>
+#include <ctype.h>
+#include <netinet/tcp.h>
+#include <sys/filio.h>
+#include <stdarg.h>
+#include<arpa/inet.h>
+#define		FILE_PATH_SEPARATE		'/'
 #endif	//end platform define
 
 
