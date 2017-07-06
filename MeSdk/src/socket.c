@@ -51,6 +51,28 @@ char	IsConnectBlocked(int nErrorCode)
 	return TRUE;
 }
 
+#elif           PROJECT_FOR_IOS
+#define         GetNetOsError()           errno
+#define         SOCKET_FD(fd)             (fd+1)
+#define         NET_SOCKET_ERROR          -1
+#define         SOCKET_CONNECT_PROGRESS   EINPROGRESS
+#define         NET_INVALIDSOCKET         -1
+
+IME_EXTERN_C char*	ConvertErrorCodeToString(uint32_t ErrorCode)
+{
+  return strerror(ErrorCode);
+}
+
+//check net is broken
+char	IsConnectBlocked(int nErrorCode)
+{
+  if( nErrorCode==EWOULDBLOCK
+     || nErrorCode==EAGAIN
+     || nErrorCode==EINTR)
+    return FALSE;
+  return TRUE;
+}
+
 #endif          // End Plat Difference
 
 #if !defined(EAFNOSUPPORT) && defined(WSAEAFNOSUPPORT)
@@ -100,22 +122,22 @@ uint8_t     IMeCSocketGetAddrStr(IMeSocket* pISocket , uint8_t bRemote , char* i
     {
         if( pSocket->remote_addr->family==AF_INET && nLen>=IN4ADDRSTRSZ )
         {
-            bRet = inet_ntop( AF_INET , pSocket->remote_addr->ipstr , ipbuf , nLen );
+            bRet = pom_inet_ntop( AF_INET , pSocket->remote_addr->ipstr , ipbuf , nLen );
         }
         else if( pSocket->remote_addr->family==AF_INET6 && nLen>=IN6ADDRSTRSZ )
         {
-            bRet = inet_ntop( AF_INET6 , pSocket->remote_addr->ipstr , ipbuf , nLen );
+            bRet = pom_inet_ntop( AF_INET6 , pSocket->remote_addr->ipstr , ipbuf , nLen );
         }
     }
     else
     {
         if( pSocket->local_addr->family==AF_INET && nLen>=IN4ADDRSTRSZ )
         {
-            bRet = inet_ntop( AF_INET , pSocket->local_addr->ipstr , ipbuf , nLen );
+            bRet = pom_inet_ntop( AF_INET , pSocket->local_addr->ipstr , ipbuf , nLen );
         }
         else if( pSocket->local_addr->family==AF_INET6 && nLen>=IN6ADDRSTRSZ )
         {
-            bRet = inet_ntop( AF_INET6 , pSocket->local_addr->ipstr , ipbuf , nLen );
+            bRet = pom_inet_ntop( AF_INET6 , pSocket->local_addr->ipstr , ipbuf , nLen );
         }
     }
 
@@ -222,8 +244,11 @@ uint16_t           IMeCSocketGetAddrType( IMeSocket* pISocket , uint8_t bRemote 
 uint8_t soblock(int sd)
 {
     u_long zero = 0;
-
-    if(ioctlsocket(sd, FIONBIO, &zero) == NET_SOCKET_ERROR) 
+#ifdef PROJECT_FOR_IOS
+  if(ioctl(sd, FIONBIO, &zero) == NET_SOCKET_ERROR)
+#else
+    if(ioctlsocket(sd, FIONBIO, &zero) == NET_SOCKET_ERROR)
+#endif
     {
         DebugLogString( TRUE , "[soblock]:%s" , ConvertErrorCodeToString(GetNetOsError()) );
         return FALSE;
@@ -235,8 +260,11 @@ uint8_t soblock(int sd)
 uint8_t sononblock(int sd)
 {
     u_long one = 1;
-    
-    if(ioctlsocket(sd, FIONBIO, &one) == NET_SOCKET_ERROR) 
+#ifdef PROJECT_FOR_IOS
+  if(ioctl(sd, FIONBIO, &one) == NET_SOCKET_ERROR)
+#else
+    if(ioctlsocket(sd, FIONBIO, &one) == NET_SOCKET_ERROR)
+#endif
     {
         DebugLogString( TRUE , "[sononblock]:%s" , ConvertErrorCodeToString(GetNetOsError()) );
         return FALSE;
@@ -326,8 +354,11 @@ int  IMeCSocketGetOpt( IMeSocket* pISocket , int opt )
 uint8_t IMeCSocketGetReadSize( IMeSocket* pISocket , uint32_t* pBufferLen )
 {
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
-
+#ifdef PROJECT_FOR_IOS
+  if( NET_SOCKET_ERROR==ioctl( pSocket->socket_des , FIONREAD , (u_long*)pBufferLen ) )
+#else
     if( NET_SOCKET_ERROR==ioctlsocket( pSocket->socket_des , FIONREAD , (u_long*)pBufferLen ) )
+#endif
     {
         DebugLogString( TRUE , "[IMeCSocketGetReadSize] ioctlsocket error %s" , GetNetOsError() );
         return FALSE;
@@ -854,7 +885,11 @@ void   IMeCSocketDestroy( IMeSocket* pISocket )
     if( pSocket )
     {
         if( pSocket->socket_des!=NET_INVALIDSOCKET )
+#ifdef PROJECT_FOR_IOS
+          close(pSocket->socket_des);
+#else
             closesocket(pSocket->socket_des);
+#endif
         if( pSocket->local_addr )
             free( pSocket->local_addr );
         if( pSocket->remote_addr )
@@ -868,7 +903,11 @@ void   IMeCSocketClose( IMeSocket* pISocket )
     IMeCSocket* pSocket = (IMeCSocket*)pISocket;
     if( pSocket->socket_des!=NET_INVALIDSOCKET )
     {
+#ifdef PROJECT_FOR_IOS
+      close(pSocket->socket_des);
+#else
         closesocket(pSocket->socket_des);
+#endif
         pSocket->socket_des = NET_INVALIDSOCKET;
     }
 }
