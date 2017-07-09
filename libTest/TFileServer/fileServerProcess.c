@@ -22,7 +22,7 @@ IME_EXTERN_C	void	TFileServerCheckUserTransferStatus( IMeFileServer* pFileServer
 				IMeTFileSourceUser* pTFileSourceUser = (IMeTFileSourceUser*)CArrayGetAt(pFileServer->m_arrFileSourceClient,i);
 				if( dwCurTime - pTFileSourceUser->m_dwLastRcvDataTime > TFILE_RCV_TIMEOUT && 0 != pTFileSourceUser->m_dwLastRcvDataTime )
 				{
-					CArrayRemove( pFileServer->m_arrFileSourceClient , i );
+					CArrayRemoveAt( pFileServer->m_arrFileSourceClient , i );
 					DebugLogString( TRUE , "[TFileServerCheckUserTransferStatus] rcv client data time out %0x!!" , pTFileSourceUser->m_pFileSource );
 					IMeTFileSourceUserDestroy( pTFileSourceUser );
 				}
@@ -209,8 +209,13 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvFileEnd( IMeFileServer* pFileServer , 
 				//exception tooltip
 				else
 				{
+					#ifdef PROJECT_FOR_WINDOWS
 					DebugLogString( TRUE , "[OnTFileServerProtocolRcvFileEnd] fileName:%s fileOffset:%I64d no equal fileSize:%I64d exception!!" ,		\
 						pTFileInfo->m_fileName , pTFileInfo->m_fileOffset , pTFileInfo->m_fileSize );
+					#else
+					DebugLogString( TRUE , "[OnTFileServerProtocolRcvFileEnd] fileName:%s fileOffset:%llu no equal fileSize:%llu exception!!" ,		\
+						pTFileInfo->m_fileName , pTFileInfo->m_fileOffset , pTFileInfo->m_fileSize );
+					#endif
 				}
 			}
 			else
@@ -237,7 +242,8 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvFileStart( IMeFileServer* pFileServer 
 		IMeTFileInfo* pTFileInfo = CArrayFindData( pTFileSourceUser->m_listFile , (uint64_t)nFileID );
 		if( pTFileInfo )
 		{
-			if( TFILE_STATUS_OVER != pTFileInfo->m_fileStatus && pTFileInfo->m_fileCurFd==NULL )
+			DebugLogString( TRUE , "[OnTFileServerProtocolRcvFileStart] fileStatus:%d fileObject:%0x!" , pTFileInfo->m_fileStatus , pTFileInfo->m_fileCurFd );
+			if( TFILE_STATUS_OVER != pTFileInfo->m_fileStatus && pTFileInfo->m_fileCurFd==NULL && !pTFileInfo->m_fileIsDir )
 			{
 				pTFileInfo->m_fileCurFd = CFileCreate();
 				if( pTFileInfo->m_fileCurFd && CFileOpen( pTFileInfo->m_fileCurFd , pTFileInfo->m_fileName , IMeFile_OpenWrite|IMeFile_OpenCreate ) )
@@ -250,6 +256,19 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvFileStart( IMeFileServer* pFileServer 
 				}
 				else
 					DebugLogString( TRUE , "[OnTFileServerProtocolRcvFileStart] Open server file:%s failed!!" , pTFileInfo->m_fileName );
+			}
+			else if( pTFileInfo->m_fileIsDir )
+			{
+				if( IMeCreateDirectory( pTFileInfo->m_fileName ) )
+				{
+					pTFileInfo->m_fileStatus = TFILE_STATUS_RUNNING;
+					pTFileSourceUser->m_fileCurTID = nFileID;
+					DebugLogString( TRUE , "[OnTFileServerProtocolRcvFileStart] start file is a directory:%s!!" , pTFileInfo->m_fileName );
+
+					SendTFileClientProtocolFileStartAck( pFileServer , pTFileSourceUser );
+				}
+				else
+					DebugLogString( TRUE , "[OnTFileServerProtocolRcvFileStart] create file directory:%s failed!!" , pTFileInfo->m_fileName );
 			}
 			else
 			{
@@ -310,20 +329,26 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvFilesInfo( IMeFileServer* pFileServer 
 		json_object* fileObj = json_object_array_get_idx(tfileFilesInfoObj,i);
 		const char* fileName = json_object_object_get_string( fileObj , "fileName" );
 		uint64_t fileSize;
-		uint32_t fileID;
+		int32_t fileID;
+		int32_t fileIsDir;
 		IMeTFileInfo* pTFileInfo;
 
 		char szFileName[256];
 
 		json_object_object_get_int64( fileObj , "fileSize" , (int64_t*)&fileSize );
-		json_object_object_get_int( fileObj , "fileID" , (int*)&fileID );
+		json_object_object_get_int( fileObj , "fileID" , &fileID );
+		json_object_object_get_int( fileObj , "fileIsDir" , &fileIsDir );
 		
 		sprintf( szFileName , "%s%s" , pFileServer->m_fileDir , fileName );
-		pTFileInfo = IMeTFileInfoCreate( szFileName , fileSize , fileID );
+		pTFileInfo = IMeTFileInfoCreate( szFileName , fileSize , fileID , fileIsDir );
 		if( pTFileInfo )
 		{
 			CArrayAdd( pTFileSourceUser->m_listFile , pTFileInfo , (uint64_t)fileID );
+			#ifdef 	PROJECT_FOR_WINDOWS
 			DebugLogString( TRUE , "[OnTFileServerProtocolRcvFilesInfo] add file:%s fileSize:%I64d fileID:%d!" , szFileName , fileSize , fileID );
+			#else
+			DebugLogString( TRUE , "[OnTFileServerProtocolRcvFilesInfo] add file:%s fileSize:%llu fileID:%d!" , szFileName , fileSize , fileID );
+			#endif
 		}
 	}
 

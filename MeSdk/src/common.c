@@ -209,7 +209,7 @@ IME_EXTERN_C void   IMeGetSubDirList( const char* szMainDir , IMeArray* arrSubDi
 }
 
 
-IME_EXTERN_C void	 IMeGetSubDirFileList( const char* szMainDir , IMeArray* arrSubDirFile , byte bIncludePath )
+IME_EXTERN_C void	 IMeGetSubDirFileList( const char* szMainDir , IMeArray* arrSubDirFile , uint8_t bFullPath , uint8_t bIncludeDir )
 {
     char szFilePath[256] = { 0 };
     char szFileFilter[256] = { 0 };
@@ -234,16 +234,22 @@ IME_EXTERN_C void	 IMeGetSubDirFileList( const char* szMainDir , IMeArray* arrSu
 		strcpy( szSubPath , szFilePath );
 		strcat( szSubPath , fileinfo.cFileName );
         
-		/* skip . & .. dir */
-        if( (fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) 
-            && strcmp(fileinfo.cFileName,".") 
-            && strcmp(fileinfo.cFileName,"..") )
+        /* skip . & .. dir */
+        if( !stricmp(fileinfo.cFileName,".") || !stricmp(fileinfo.cFileName,"..") )
         {
-			IMeGetSubDirFileList( szSubPath , arrSubDirFile , bIncludePath );
+            continue;
+        }
+        else if( (fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) )
+        {
+            if( bIncludeDir )
+            {
+                CArrayAdd( arrSubDirFile , strdup(szSubPath) , 0 );
+            }
+			IMeGetSubDirFileList( szSubPath , arrSubDirFile , bFullPath );
         }
         else
         {
-			if( bIncludePath )
+			if( bFullPath )
 				CArrayAdd( arrSubDirFile , strdup(szSubPath) , 0 );
 			else
 				CArrayAdd( arrSubDirFile , strdup(fileinfo.cFileName) , 0 );
@@ -365,6 +371,18 @@ IME_EXTERN_C void    IMeCreateGUID( char* szGuid )
 IME_EXTERN_C uint32_t    IMeGetCurrentTime()
 {
     return timeGetTime();
+}
+
+IME_EXTERN_C void    IMeGetCurrentTimeYMDHMS( IMeTime* pMeTime )
+{
+    SYSTEMTIME st; 
+    GetLocalTime(&st);
+    pMeTime->year = st.wYear;
+    pMeTime->month = st.wMonth;
+    pMeTime->day = st.wDay;
+    pMeTime->hour = st.wHour;
+    pMeTime->minute = st.wMinute;
+    pMeTime->second = st.wSecond;
 }
 
 IME_EXTERN_C void    IMeSleep( uint32_t dwMiliseconds )
@@ -494,7 +512,7 @@ IME_EXTERN_C void  IMeGetSubDirList( const char* szMainDir , IMeArray* arrSubDir
 }  
 
 
-IME_EXTERN_C void	 IMeGetSubDirFileList( const char* szMainDir , IMeArray* arrSubDirFile , uint8_t bIncludePath )
+IME_EXTERN_C void	 IMeGetSubDirFileList( const char* szMainDir , IMeArray* arrSubDirFile , uint8_t bFullPath , uint8_t bIncludeDir )
 {
     char szFilePath[256] = { 0 };
     strcpy( szFilePath , szMainDir );
@@ -513,15 +531,21 @@ IME_EXTERN_C void	 IMeGetSubDirFileList( const char* szMainDir , IMeArray* arrSu
 		strcpy( szSubPath , szFilePath );
         strcat( szSubPath , pFileInfo->d_name );
 
-        if( IMeFileIsDir(szSubPath)==1
-            && strcmp(pFileInfo->d_name, ".") 
-            && strcmp(pFileInfo->d_name, ".."))  
+        if( !strcmp(pFileInfo->d_name, ".") || !strcmp(pFileInfo->d_name, "..") )
+        {
+           continue;
+        }
+        else if( IMeFileIsDir(szSubPath)==1 )  
         {  
-            IMeGetSubDirFileList( szSubPath , arrSubDirFile , bIncludePath );              
+            if( bIncludeDir )
+            {
+                CArrayAdd( arrSubDirFile , strdup(szSubPath) , 0 );
+            }
+            IMeGetSubDirFileList( szSubPath , arrSubDirFile , bFullPath , bIncludeDir );              
         }  
         else
         {
-			if( bIncludePath )
+			if( bFullPath )
 				CArrayAdd( arrSubDirFile , strdup(szSubPath) , 0 );
 			else
 				CArrayAdd( arrSubDirFile , strdup(pFileInfo->d_name) , 0 );
@@ -647,6 +671,22 @@ IME_EXTERN_C uint32_t    IMeGetCurrentTime()
     if( clock_gettime(CLOCK_MONOTONIC, &on) == 0 )  
         uptime = on.tv_sec*1000 + on.tv_nsec/1000000;  
     return uptime;  
+}
+
+IME_EXTERN_C void    IMeGetCurrentTimeYMDHMS( IMeTime* pMeTime )
+{
+    time_t  timestamp; 
+    struct tm *time_tm; 
+    
+    time(&timestamp);
+    time_tm = localtime(&timestamp);
+
+    pMeTime->year = time_tm->tm_year + 1900;
+    pMeTime->month = time_tm->tm_mon + 1;
+    pMeTime->day = time_tm->tm_mday;
+    pMeTime->hour = time_tm->tm_hour;
+    pMeTime->minute = time_tm->tm_min;
+    pMeTime->second = time_tm->tm_sec;
 }
 
 IME_EXTERN_C void    IMeSleep( uint32_t dwMiliseconds )

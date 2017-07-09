@@ -1,12 +1,13 @@
 #include	"fileCommon.h"
 
-IME_EXTERN_C	IMeTFileInfo*	IMeTFileInfoCreate( const char* pFileName , uint64_t llFileSize , uint32_t nFileID )
+IME_EXTERN_C	IMeTFileInfo*	IMeTFileInfoCreate( const char* pFileName , uint64_t llFileSize , uint32_t nFileID , uint8_t bIsDir )
 {
 	IMeTFileInfo* pTFileInfo = (IMeTFileInfo*)calloc(1,sizeof(IMeTFileInfo));
 	if( pTFileInfo )
 	{
 		pTFileInfo->m_fileID = nFileID;
 		pTFileInfo->m_fileName = strdup(pFileName);
+		pTFileInfo->m_fileIsDir = bIsDir;
 		pTFileInfo->m_fileSize = llFileSize;
 		pTFileInfo->m_fileStatus = TFILE_STATUS_WAITING;
 	}

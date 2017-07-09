@@ -13,7 +13,6 @@
 #define		LEN_SHORT			(sizeof(int16_t))
 #define		LEN_USHORT			(sizeof(uint16_t))
 
-
 //########################################################
 //########################################################
 //start define for windows platform
@@ -110,7 +109,7 @@ typedef     unsigned __int64    uint64_t;
 #include <netinet/tcp.h>
 #include <sys/filio.h>
 #include <stdarg.h>
-#include<arpa/inet.h>
+#include <arpa/inet.h>
 #define		FILE_PATH_SEPARATE		'/'
 #endif	//end platform define
 

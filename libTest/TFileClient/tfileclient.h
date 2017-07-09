@@ -49,6 +49,7 @@ public:
 public:
 	uint8_t	m_bUploading;
 	IMeThread*	m_thread;
+	IMeEvent*	m_evWaitAck;
 
 public:
 	void	ReleaseFileInfoList();

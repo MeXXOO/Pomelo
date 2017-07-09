@@ -16,10 +16,10 @@ typedef struct _IMeTFileInfo{
 	uint32_t	m_fileID;		/* file id for transfered */
 	IMeFile* 	m_fileCurFd;	/* file fd */
 	int			m_fileStatus;	/* file transfered status */
-	uint32_t	m_fileLastNotifytime;	/* last notify start transfer file time */
+	uint8_t		m_fileIsDir;	/* file is directory */
 }IMeTFileInfo;
 
-IME_EXTERN_C IMeTFileInfo*	IMeTFileInfoCreate( const char* pFileName , uint64_t llFileSize , uint32_t nFileID );
+IME_EXTERN_C IMeTFileInfo*	IMeTFileInfoCreate( const char* pFileName , uint64_t llFileSize , uint32_t nFileID , uint8_t bIsDir );
 IME_EXTERN_C	void	IMeTFileInfoDestroy( IMeTFileInfo* pTFileInfo );
 
 //single upload file

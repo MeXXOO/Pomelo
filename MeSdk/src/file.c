@@ -235,7 +235,7 @@ int  IMeCFileOpen( IMeFile* pIFile , char* pFileName , int nOpenFlag )
         pFile->m_hFile = open( pFileName , nOpenMode );
         if( pFile->m_hFile==-1 )
         {
-            DebugLogString( TRUE , "[IMeFileOpen] open File %s failed!" , pFileName );
+            DebugLogString( TRUE , "[IMeFileOpen] open File %s failed errorstr:%s!" , pFileName , strerror(errno) );
             pFile->m_hFile = -1;
             break;
         }
@@ -360,7 +360,7 @@ void IMeCFileClose( IMeFile* pIFile )
     IMeCFile* pFile = (IMeCFile*)pIFile;
     if( !pFile || -1==pFile->m_hFile )    return;
     close( pFile->m_hFile );
-    pFile->m_hFile = 0;
+    pFile->m_hFile = -1;
     free( pFile->m_pFileName );
     pFile->m_pFileName = NULL;
 }
@@ -379,6 +379,7 @@ IME_EXTERN_C IMeFile*    IMeFileCreate()
     
     if( pFile )
     {
+        pFile->m_hFile = -1;
         ((IMeFile*)pFile)->m_pClose = IMeCFileClose;
         ((IMeFile*)pFile)->m_pDestroy = IMeCFileDestroy;
         ((IMeFile*)pFile)->m_pGetPosition = IMeCFileGetPosition;

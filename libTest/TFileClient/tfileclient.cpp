@@ -37,6 +37,7 @@ CTFileClient::CTFileClient()
 
 	m_bUploading = FALSE;
 	m_thread = NULL;
+	m_evWaitAck = CEventCreate(TRUE,FALSE);
 }
 
 
@@ -54,6 +55,12 @@ CTFileClient::~CTFileClient()
 	{
 		CLock_Destroy( m_lockerListFileSource );
 		m_lockerListFileSource = NULL;
+	}
+
+	if( m_evWaitAck )
+	{
+		CEventDestroy( m_evWaitAck );
+		m_evWaitAck = NULL;
 	}
 }
 
@@ -135,6 +142,7 @@ void CTFileClient::StartUploadThead( uint8_t bStart )
 	//stop upload
 	else if( !bStart && m_bUploading )
 	{
+		CEventSet( m_evWaitAck );
 		m_bUploading = FALSE;
 		CThreadExit( m_thread , 2000 );
 		CThreadDestroy( m_thread );
@@ -224,48 +232,57 @@ void CTFileClient::LoginServer( const char* pAccount , const char* pPassword )
 uint8_t CTFileClient::CommitFileInfo( const char* pFilePath )
 {
 	uint64_t llSize;
+	int32_t isDir;
 	IMeTFileInfo* pTFileInfo;
 	char* pFileName;
 	char szUplevelFilePath[256];
 
 	IMeTFileSource* pTFileSource;
 
-	IMeArray* arrFile;
 	IMeArray* arrFileList;
 
-	if( !m_bLoginSuccess || !pFilePath )	return FALSE;
+	if( !m_bLoginSuccess || !pFilePath || (-1==IMeFileIsDir(pFilePath)) )	return FALSE;
 
-	arrFile = CArrayCreate(SORT_NULL);
 	arrFileList = CArrayCreate(SORT_INC);
 
 	memset( szUplevelFilePath , 0 , 256 );
 	IMeGetUpLevelFilePath( pFilePath , szUplevelFilePath , 1 );
-	IMeGetSubDirFileList( pFilePath , arrFile , TRUE );
-	
+
 	//direct raw file
-	if( !CArrayGetSize(arrFile) )
+	if( !IMeFileIsDir(pFilePath) )
 	{
 		llSize = IMeGetFileSize(pFilePath);
-		pTFileInfo = IMeTFileInfoCreate( pFilePath+strlen(szUplevelFilePath) , llSize , m_fileIdIndex++ );
-		if( pTFileInfo )	CArrayAdd( arrFileList , pTFileInfo , m_fileIdIndex-1 );
+
+		pTFileInfo = IMeTFileInfoCreate( pFilePath+strlen(szUplevelFilePath) , llSize , m_fileIdIndex , FALSE );
+		if( pTFileInfo )	CArrayAdd( arrFileList , pTFileInfo , m_fileIdIndex );
+		++m_fileIdIndex;
 	}
 	//file directory
 	else
 	{
 		int i;
+		IMeArray* arrFile = CArrayCreate(SORT_NULL);
+		
+		//add top level directory
+		CArrayAdd( arrFile, strdup(pFilePath), 0 );
+		IMeGetSubDirFileList( pFilePath , arrFile , TRUE , TRUE );
+
 		for( i=0; i<CArrayGetSize(arrFile); i++ )
 		{
 			pFileName = (char*)CArrayGetAt(arrFile,i);
-			llSize = IMeGetFileSize(pFileName);
+			isDir = IMeFileIsDir( pFileName );
+			llSize = 0;
+			if( isDir==0 )
+				llSize = IMeGetFileSize(pFileName);
 			
-			pTFileInfo = IMeTFileInfoCreate( pFileName+strlen(szUplevelFilePath) , llSize , m_fileIdIndex++ );	
-			if( pTFileInfo )	CArrayAdd( arrFileList , pTFileInfo , m_fileIdIndex-1 );
+			pTFileInfo = IMeTFileInfoCreate( pFileName+strlen(szUplevelFilePath) , llSize , m_fileIdIndex , (isDir==1) );	
+			if( pTFileInfo )	CArrayAdd( arrFileList , pTFileInfo , m_fileIdIndex );
+			++m_fileIdIndex;
 
 			free(pFileName);
 		}
+		CArrayDestroy(arrFile);
 	}
-
-	CArrayDestroy(arrFile);
 
 	//create file source
 	pTFileSource = IMeTFileSourceCreate( arrFileList , szUplevelFilePath );

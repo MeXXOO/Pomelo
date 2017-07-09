@@ -54,6 +54,7 @@ IME_EXTERN_C	uint8_t	SendTFileServerLocalFileInfo( CTFileClient* pFileClient , I
 		json_object_object_add( fileObj , "fileName" , json_object_new_string(pFileInfo->m_fileName) );
 		json_object_object_add( fileObj , "fileSize" , json_object_new_int64(pFileInfo->m_fileSize) );
 		json_object_object_add( fileObj , "fileID"   , json_object_new_int(pFileInfo->m_fileID) );
+		json_object_object_add( fileObj , "fileIsDir"   , json_object_new_int(pFileInfo->m_fileIsDir) );
 		json_object_array_add( arrFileObj , fileObj );
 	}
 
@@ -70,6 +71,8 @@ IME_EXTERN_C	uint8_t	SendTFileServerLocalFileInfo( CTFileClient* pFileClient , I
 			sndRes = TRUE;
 		
 		free( lpData );
+
+		CEventWait( pFileClient->m_evWaitAck , 5000 );
 	}
 
 	json_object_put( arrFileObj );
@@ -79,31 +82,29 @@ IME_EXTERN_C	uint8_t	SendTFileServerLocalFileInfo( CTFileClient* pFileClient , I
 
 IME_EXTERN_C	void	SendTFileServerLocalFileStart( CTFileClient* pFileClient , IMeTFileInfo* pFileInfo )
 {
-	if( IMeGetCurrentTime() - pFileInfo->m_fileLastNotifytime > 5000 )
-	{
-		char lpData[1024];
-		int nOff = 0;
-		int ph;
-		
-		const char* fileObjStr;
-		json_object* fileObj = json_object_new_object();
-		
-		json_object_object_add( fileObj , "fileID" , json_object_new_int( pFileInfo->m_fileID ) );
-		fileObjStr = json_object_to_json_string( fileObj );
+	char lpData[1024];
+	int nOff = 0;
+	int ph;
 
-		ph = MAKE_TFILEH( TFILE_APP_CLIENT , TFILE_DFORMAT_JSON , TFILE_C2S_ADD_FILE_START );
+	const char* fileObjStr;
+	json_object* fileObj = json_object_new_object();
 
-		memcpy( &lpData[nOff] , &ph , LEN_INT );	nOff += LEN_INT;
-		memcpy( &lpData[nOff] , fileObjStr , strlen(fileObjStr) );	nOff += strlen(fileObjStr); 
+	json_object_object_add( fileObj , "fileID" , json_object_new_int( pFileInfo->m_fileID ) );
+	fileObjStr = json_object_to_json_string( fileObj );
+
+	ph = MAKE_TFILEH( TFILE_APP_CLIENT , TFILE_DFORMAT_JSON , TFILE_C2S_ADD_FILE_START );
+
+	memcpy( &lpData[nOff] , &ph , LEN_INT );	nOff += LEN_INT;
+	memcpy( &lpData[nOff] , fileObjStr , strlen(fileObjStr) );	nOff += strlen(fileObjStr); 
 
 		//send success
-		if( pFileClient->SendLocalData( lpData , nOff ) == nOff )
-		{
-			pFileInfo->m_fileLastNotifytime = IMeGetCurrentTime();
-		}
-
-		json_object_put( fileObj );
+	if( pFileClient->SendLocalData( lpData , nOff ) == nOff )
+	{
+		//wait server start ack
+		CEventWait( pFileClient->m_evWaitAck, 5000 );
 	}
+
+	json_object_put( fileObj );
 }
 
 IME_EXTERN_C	void	SendTFileServerLocalFileData( CTFileClient* pFileClient , IMeTFileSource* pFileSource , IMeTFileInfo* pFileInfo )
@@ -165,33 +166,30 @@ IME_EXTERN_C	void	SendTFileServerLocalFile( CTFileClient* pFileClient , IMeTFile
 
 IME_EXTERN_C	void	SendTFileServerLocalFileEnd( CTFileClient* pFileClient , IMeTFileInfo* pFileInfo )
 {
-	if( IMeGetCurrentTime() - pFileInfo->m_fileLastNotifytime > 5000 )
-	{
-		char lpData[1024];
-		int nOff = 0;
-		int ph;
-		
-		const char* fileObjStr;
-		json_object* fileObj = json_object_new_object();
-		
-		json_object_object_add( fileObj , "fileID" , json_object_new_int( pFileInfo->m_fileID ) );
-		fileObjStr = json_object_to_json_string( fileObj );
+	char lpData[1024];
+	int nOff = 0;
+	int ph;
 
-		ph = MAKE_TFILEH( TFILE_APP_CLIENT , TFILE_DFORMAT_JSON , TFILE_C2S_ADD_FILE_END );
+	const char* fileObjStr;
+	json_object* fileObj = json_object_new_object();
 
-		memcpy( &lpData[nOff] , &ph , LEN_INT );	nOff += LEN_INT;
-		memcpy( &lpData[nOff] , fileObjStr , strlen(fileObjStr) );	nOff += strlen(fileObjStr); 
+	json_object_object_add( fileObj , "fileID" , json_object_new_int( pFileInfo->m_fileID ) );
+	fileObjStr = json_object_to_json_string( fileObj );
+
+	ph = MAKE_TFILEH( TFILE_APP_CLIENT , TFILE_DFORMAT_JSON , TFILE_C2S_ADD_FILE_END );
+
+	memcpy( &lpData[nOff] , &ph , LEN_INT );	nOff += LEN_INT;
+	memcpy( &lpData[nOff] , fileObjStr , strlen(fileObjStr) );	nOff += strlen(fileObjStr); 
 
 		//send success
-		if( pFileClient->SendLocalData( lpData , nOff ) == nOff )
-		{
-			pFileInfo->m_fileLastNotifytime = IMeGetCurrentTime();
-		}
-
-		DebugLogString( TRUE , "[SendTFileServerLocalFileEnd] fileID:%d over!!" , pFileInfo->m_fileID );
-
-		json_object_put( fileObj );
+	if( pFileClient->SendLocalData( lpData , nOff ) == nOff )
+	{
+		CEventWait( pFileClient->m_evWaitAck , 5000 );
 	}
+
+	DebugLogString( TRUE , "[SendTFileServerLocalFileEnd] fileID:%d over!!" , pFileInfo->m_fileID );
+
+	json_object_put( fileObj );
 }
 
 IME_EXTERN_C	void	SendTFileServerAddFilesOver( CTFileClient* pFileClient , IMeTFileSource* pFileSource )
@@ -267,16 +265,9 @@ IME_EXTERN_C	void	TFileClientTheadUploadFile( void* parameter )
 		//commit file info to server
 		if( pFileSource->m_curUploadStatus == TFILE_STATUS_WAITING )
 		{
-			if(  IMeGetCurrentTime() - pFileSource->m_lastCommitInfoTime > 5000 )
+			if( SendTFileServerLocalFileInfo( pTFileClient , pFileSource ) )
 			{
-				if( SendTFileServerLocalFileInfo( pTFileClient , pFileSource ) )
-				{
-					pFileSource->m_lastCommitInfoTime = IMeGetCurrentTime();
-				}
-			}
-			else
-			{
-				IMeSleep(10);
+				pFileSource->m_lastCommitInfoTime = IMeGetCurrentTime();
 			}
 		}
 		//snd data
@@ -371,6 +362,8 @@ IME_EXTERN_C	void	OnTFileClientProtocolRcvFileEndAck( CTFileClient* pFileClient 
 						//try upload next file in this file source
 						pTFileSource->m_nCurUploadFileID = -1;
 
+						CEventSet( pFileClient->m_evWaitAck );
+
 						DebugLogString( TRUE , "[OnTFileClientProtocolRcvFileEndAck] file:%s fileID:%d was uploaded over!!" , pTFileInfo->m_fileName , nFileID );
 					}
 				}
@@ -412,7 +405,7 @@ IME_EXTERN_C	void	OnTFileClientProtocolRcvFileStartAck( CTFileClient* pFileClien
 			{
 				pTFileSource->m_nCurUploadFileID = nFileID;
 				pTFileInfo->m_fileStatus = TFILE_STATUS_RUNNING;
-				pTFileInfo->m_fileLastNotifytime = 0;
+				CEventSet( pFileClient->m_evWaitAck );
 				DebugLogString( TRUE , "[OnTFileClientProtocolRcvFileStartAck] change current upload fileid:%d filename:%s is running!!" , pTFileInfo->m_fileID , pTFileInfo->m_fileName );
 			}
 			else 
@@ -441,6 +434,7 @@ IME_EXTERN_C	void	OnTFileClientProtocolRcvFilesInfoAck( CTFileClient* pFileClien
 	{
         pTFileSource->m_dwStartTransferTime = IMeGetCurrentTime();
 		pTFileSource->m_curUploadStatus = TFILE_STATUS_RUNNING;
+		CEventSet( pFileClient->m_evWaitAck );
 	}
 	
 	CLock_Unlock( pFileClient->m_lockerListFileSource );
