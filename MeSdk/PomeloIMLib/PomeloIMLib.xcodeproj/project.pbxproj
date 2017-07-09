@@ -235,9 +235,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B207B8451F0A8C92004C3FDA /* socket_common.c in Sources */,
 				B207B8441F0A8C92004C3FDA /* socket_addr.c in Sources */,
 				B207B84A1F0A8C92004C3FDA /* socket_tcp.c in Sources */,
-				B207B8451F0A8C92004C3FDA /* socket_common.c in Sources */,
 				B207B8421F0A8C92004C3FDA /* log.c in Sources */,
 				B207B8411F0A8C92004C3FDA /* lock.c in Sources */,
 				B207B8491F0A8C92004C3FDA /* socket_manager.c in Sources */,
