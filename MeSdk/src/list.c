@@ -53,7 +53,8 @@ int IMeCListGetCount( IMeList* list )
 void*   IMeCListGetNext( IMeList* list , uint32_t* position )
 {
     IMeCList* list_t = (IMeCList*)list;
-    list_node_t* node_t = (list_node_t*)*position;
+
+    list_node_t* node_t = (list_node_t*)(long)(*position);
     
     if( list_t && node_t )
     {
@@ -68,7 +69,7 @@ void*   IMeCListGetNext( IMeList* list , uint32_t* position )
 void*   IMeCListGetPre( IMeList* list , uint32_t* position )
 {
     IMeCList* list_t = (IMeCList*)list;
-    list_node_t* node_t = (list_node_t*)*position;
+    list_node_t* node_t = (list_node_t*)(long)(*position);
    
     if( list_t && node_t )
     {

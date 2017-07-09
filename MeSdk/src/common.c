@@ -50,9 +50,13 @@ IME_EXTERN_C void	IMeGetUpLevelFilePath( const char* szInputPath , char* szOutpu
 IME_EXTERN_C  char   IMeCreateDirectory( const char* pDir )
 {
     int i = 0;  
-    int iRet;  
-    int iLen;  
-    char* pszDir;  
+    int iRet;
+#ifdef PROJECT_FOR_IOS
+  size_t iLen;
+#else
+    int iLen;
+#endif
+    char* pszDir;
     
     if( NULL == pDir )  
         return FALSE;  

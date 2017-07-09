@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:PomeloServer/PomeloServer.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:PomeloIMLib/PomeloIMLib.xcodeproj">
    </FileRef>
 </Workspace>
