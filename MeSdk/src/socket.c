@@ -528,25 +528,25 @@ uint8_t     IMeCSocketConnect( IMeSocket* pISocket , char* ipstr , uint16_t port
         
         socket_error = GetNetOsError();
         
-        /* ¡¤?¡Á¨¨¨¨?¨¢??¨®,¦Ì¡Â¨®?¨¢¡é?¡ä¡¤¦Ì??¨¢??¨®?D¡Á¡ä¨¬? */
+        /* connect error */
         if( socket_error != SOCKET_CONNECT_PROGRESS )  
         {
             DebugLogString( TRUE , "[IMeCSocketConnect] connect failed error:%s" , ConvertErrorCodeToString(socket_error) );
             return FALSE;
         }
         
-        /* ¨¦¨¨??¦Ì¨¨¡äy¨º¡À???a¨¢?,?¨°?¡À?¨®¡¤¦Ì??,¡¤??¨°¦Ì¨¨¡äy¨¢??¨®¨ª¨º3¨¦?¨°¨º?3?¨º¡À¡¤¦Ì?? */
+        /* connect timeout  */
         if( pSocket->s_timeout==0 )
         {
             DebugLogString( TRUE , "[IMeCSocketConnect] connecting ......" );
             return TRUE;
         }
         
-        /* ¦Ì¨¨¡äy¨¢??¨®¨ª¨º3¨¦?¨°¨º?¨¢??¨®3?¨º¡À */
+        /* select socket is avaliable */
         FD_ZERO(&write_fdset);
-        FD_SET( SOCKET_FD(pSocket->socket_des) , &write_fdset );
+        FD_SET( pSocket->socket_des , &write_fdset );
         FD_ZERO(&exception_fdset);
-        FD_SET( SOCKET_FD(pSocket->socket_des) , &exception_fdset );
+        FD_SET( pSocket->socket_des , &exception_fdset );
         
         if( pSocket->s_timeout<0 )
         {
@@ -559,7 +559,7 @@ uint8_t     IMeCSocketConnect( IMeSocket* pISocket , char* ipstr , uint16_t port
             ptrTime = &tv;
         }
         
-        socket_error = select( pSocket->socket_des , NULL , &write_fdset , &exception_fdset , ptrTime );
+        socket_error = select( SOCKET_FD(pSocket->socket_des) , NULL , &write_fdset , &exception_fdset , ptrTime );
         /* invoke select function failed */
         if( socket_error==NET_SOCKET_ERROR )
         {
@@ -724,7 +724,7 @@ POMInteger    IMeCSocketSendTo( IMeSocket* pISocket , char* szIP , uint16_t nPor
     {
         sock_addr_ipv4.sin_family = AF_INET;
         sock_addr_ipv4.sin_port = htons(nPort);
-        if( !inet_pton(AF_INET, szIP, &sock_addr_ipv4.sin_addr) )
+        if( !pom_inet_pton(AF_INET, szIP, &sock_addr_ipv4.sin_addr) )
         {
             DebugLogString( TRUE , "[IMeCSocketSendTo] inet_pton failed!1" );
             return sendStatus;
@@ -736,7 +736,7 @@ POMInteger    IMeCSocketSendTo( IMeSocket* pISocket , char* szIP , uint16_t nPor
     {
         sock_addr_ipv6.sin6_family = AF_INET6;
         sock_addr_ipv6.sin6_port = htons(nPort);
-        if( !inet_pton(AF_INET6, szIP, &sock_addr_ipv6.sin6_addr) )
+        if( !pom_inet_pton(AF_INET6, szIP, &sock_addr_ipv6.sin6_addr) )
         {
             DebugLogString( TRUE , "[IMeCSocketSendTo] inet_pton failed!1" );
             return sendStatus;

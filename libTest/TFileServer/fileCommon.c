@@ -1,7 +1,7 @@
 #include	"fileCommon.h"
 #include	"server.h"
 
-IME_EXTERN_C	IMeTFileInfo*	IMeTFileInfoCreate( char* pFileName , uint64 llFileSize , uint nFileID )
+IME_EXTERN_C	IMeTFileInfo*	IMeTFileInfoCreate( char* pFileName , uint64_t llFileSize , uint32_t nFileID , int32_t bIsFileDir )
 {
 	IMeTFileInfo* pTFileInfo = (IMeTFileInfo*)calloc(1,sizeof(IMeTFileInfo));
 	if( pTFileInfo )
@@ -10,6 +10,7 @@ IME_EXTERN_C	IMeTFileInfo*	IMeTFileInfoCreate( char* pFileName , uint64 llFileSi
 		pTFileInfo->m_fileName = strdup(pFileName);
 		pTFileInfo->m_fileSize = llFileSize;
 		pTFileInfo->m_fileStatus = TFILE_STATUS_WAITING;
+		pTFileInfo->m_fileIsDir = bIsFileDir;
 	}
 	return pTFileInfo;
 }
@@ -33,7 +34,7 @@ IME_EXTERN_C	void	IMeTFileSourceUserReleaseFileList( IMeTFileSourceUser* pTFileS
 
     for( i=0; i<CArrayGetSize(pTFileSourceUser->m_listFile); i++ )
     {
-	    pTfileInfo = CArrayGetAt(pTFileSourceUser->m_listFile,i);
+	    pTfileInfo = (IMeTFileInfo*)CArrayGetAt(pTFileSourceUser->m_listFile,i);
 		IMeTFileInfoDestroy( pTfileInfo );	
     }
 	CArrayRemoveAll( pTFileSourceUser->m_listFile );

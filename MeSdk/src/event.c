@@ -210,14 +210,14 @@ IME_EXTERN_C IMeEvent*   IMeEventCreate( uint8_t bInitialState , uint8_t bReSet 
     IMeCEvent* pEvent = (IMeCEvent*)calloc(1,sizeof(IMeCEvent));
     while( pEvent )
     {
-        if( pthread_cond_init( &pEvent->thread_cond , NULL ) !=0 )
+        if( pthread_cond_init( &pEvent->thread_cond , NULL ) != 0 )
         {
             DebugLogString( TRUE , "[IMeEventCreate] pthread_cond_init failed!" );
             free(pEvent);
             pEvent = NULL;
             break;
         }
-        if( pthread_mutexattr_init( &pEvent->mutex_attr ) !=0 )
+        if( pthread_mutexattr_init( &pEvent->mutex_attr ) != 0 )
         {
             DebugLogString( TRUE , "[IMeEventCreate] pthread_mutexattr_init failed!" );
             pthread_cond_destroy( &pEvent->thread_cond );
@@ -225,9 +225,9 @@ IME_EXTERN_C IMeEvent*   IMeEventCreate( uint8_t bInitialState , uint8_t bReSet 
             pEvent = NULL;
             break;
         }
-        pthread_mutexattr_settype( &pEvent->mutex_attr , PTHREAD_MUTEX_RECURSIVE_NP );    /* ÆÕÍ¨Ëø */
+        pthread_mutexattr_settype( &pEvent->mutex_attr , PTHREAD_MUTEX_RECURSIVE_NP );    /* Ç¶Ì×Ëø */
         
-        if( !pthread_mutex_init( &pEvent->cond_mutex , &pEvent->mutex_attr ) )
+        if( pthread_mutex_init( &pEvent->cond_mutex , &pEvent->mutex_attr ) != 0 )
         {
             DebugLogString( TRUE , "[IMeEventCreate] pthread_mutex_init failed!" );
             pthread_cond_destroy( &pEvent->thread_cond );

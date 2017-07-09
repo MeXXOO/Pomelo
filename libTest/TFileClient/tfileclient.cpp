@@ -37,6 +37,7 @@ CTFileClient::CTFileClient()
 
 	m_bUploading = FALSE;
 	m_thread = NULL;
+	m_evWaitAck = CEventCreate(TRUE,FALSE);
 }
 
 
@@ -55,6 +56,12 @@ CTFileClient::~CTFileClient()
 		CLock_Destroy( m_lockerListFileSource );
 		m_lockerListFileSource = NULL;
 	}
+
+	if( m_evWaitAck )
+	{
+		CEventDestroy( m_evWaitAck );
+		m_evWaitAck = NULL;
+	}
 }
 
 void CTFileClient::ReleaseFileInfoList()
@@ -63,7 +70,7 @@ void CTFileClient::ReleaseFileInfoList()
 
 	CLock_Lock( m_lockerListFileSource );
 
-	while( pFileSource = (IMeTFileSource*)CListRemoveHead(m_listFileSource) )
+	while( (pFileSource = (IMeTFileSource*)CListRemoveHead(m_listFileSource)) )
 		IMeTFileSourceDestroy( pFileSource );
 
 	CLock_Unlock( m_lockerListFileSource );
@@ -75,7 +82,7 @@ void CTFileClient::SetCallBack( OnRcvTFileClientStatus CB , void* upApp )
 	m_upApp = upApp;
 }
 
-bool CTFileClient::Init( int nTransferProtocolType )
+uint8_t CTFileClient::Init( int nTransferProtocolType )
 {
 	DeInit();
 
@@ -124,17 +131,18 @@ void CTFileClient::DeInit()
 	}
 }
 
-void CTFileClient::StartUploadThead( boolean bStart )
+void CTFileClient::StartUploadThead( uint8_t bStart )
 {
 	//start upload
 	if( bStart && !m_bUploading )
 	{
 		m_bUploading = TRUE;
-		m_thread = CThreadCreate( TFileClientTheadUploadFile, this );
+		m_thread = CThreadCreate( (void*)TFileClientTheadUploadFile, this );
 	}
 	//stop upload
 	else if( !bStart && m_bUploading )
 	{
+		CEventSet( m_evWaitAck );
 		m_bUploading = FALSE;
 		CThreadExit( m_thread , 2000 );
 		CThreadDestroy( m_thread );
@@ -152,7 +160,7 @@ void CTFileClient::DisconnectServer()
     }
 }
 
-bool CTFileClient::ConnectServer( const char* pServerAddress , ushort port , int nAFFamily )
+uint8_t CTFileClient::ConnectServer( const char* pServerAddress , uint16_t port , int nAFFamily )
 {
 	if( !m_bRunning )
 		return FALSE;
@@ -162,7 +170,7 @@ bool CTFileClient::ConnectServer( const char* pServerAddress , ushort port , int
 
 	if( m_nTransferProtocolType == TFileProtocol_Tcp )
 	{
-		m_pTcpSocket = CSocketManagerCreateTcpSocket( m_pSocketManager , NULL , NULL , nAFFamily , 5000 , OnTcpClientSocketRcvDataCallBack , this );
+		m_pTcpSocket = CSocketManagerCreateTcpSocket( m_pSocketManager , NULL , 0 , nAFFamily , 5000 , OnTcpClientSocketRcvDataCallBack , this );
 		if( !m_pTcpSocket )	
 		{
 			DebugLogString( TRUE , "[CTFileClient::ConnectServer] CSocketManagerCreateTcpSocket failed!!" );
@@ -177,7 +185,7 @@ bool CTFileClient::ConnectServer( const char* pServerAddress , ushort port , int
 	}
     else if( m_nTransferProtocolType == TFileProtocol_Udp )
 	{
-		m_pUdpSocket = CSocketManagerCreateUdpSocket( m_pSocketManager , NULL , NULL , nAFFamily , 5000 , OnUdpClientSocketRcvDataCallBack , this );
+		m_pUdpSocket = CSocketManagerCreateUdpSocket( m_pSocketManager , NULL , 0 , nAFFamily , 5000 , OnUdpClientSocketRcvDataCallBack , this );
 		if( !m_pUdpSocket )	
 		{
 			DebugLogString( TRUE , "[CTFileClient::ConnectServer] CSocketManagerCreateUdpSocket failed!!" );
@@ -221,51 +229,60 @@ void CTFileClient::LoginServer( const char* pAccount , const char* pPassword )
 	SendTFileServerLoginUserInfo( this , pAccount , pPassword );
 }
 
-bool CTFileClient::CommitFileInfo( const char* pFilePath )
+uint8_t CTFileClient::CommitFileInfo( const char* pFilePath )
 {
-	uint64 llSize;
+	uint64_t llSize;
+	int32_t isDir;
 	IMeTFileInfo* pTFileInfo;
 	char* pFileName;
 	char szUplevelFilePath[256];
 
 	IMeTFileSource* pTFileSource;
 
-	IMeArray* arrFile;
 	IMeArray* arrFileList;
 
-	if( !m_bLoginSuccess || !pFilePath )	return FALSE;
+	if( !m_bLoginSuccess || !pFilePath || (-1==IMeFileIsDir(pFilePath)) )	return FALSE;
 
-	arrFile = CArrayCreate(SORT_NULL);
 	arrFileList = CArrayCreate(SORT_INC);
 
 	memset( szUplevelFilePath , 0 , 256 );
 	IMeGetUpLevelFilePath( pFilePath , szUplevelFilePath , 1 );
-	IMeGetSubDirFileList( pFilePath , arrFile , TRUE );
-	
+
 	//direct raw file
-	if( !CArrayGetSize(arrFile) )
+	if( !IMeFileIsDir(pFilePath) )
 	{
 		llSize = IMeGetFileSize(pFilePath);
-		pTFileInfo = IMeTFileInfoCreate( pFilePath+strlen(szUplevelFilePath) , llSize , m_fileIdIndex++ );
-		if( pTFileInfo )	CArrayAdd( arrFileList , pTFileInfo , m_fileIdIndex-1 );
+
+		pTFileInfo = IMeTFileInfoCreate( pFilePath+strlen(szUplevelFilePath) , llSize , m_fileIdIndex , FALSE );
+		if( pTFileInfo )	CArrayAdd( arrFileList , pTFileInfo , m_fileIdIndex );
+		++m_fileIdIndex;
 	}
 	//file directory
 	else
 	{
 		int i;
+		IMeArray* arrFile = CArrayCreate(SORT_NULL);
+		
+		//add top level directory
+		CArrayAdd( arrFile, strdup(pFilePath), 0 );
+		IMeGetSubDirFileList( pFilePath , arrFile , TRUE , TRUE );
+
 		for( i=0; i<CArrayGetSize(arrFile); i++ )
 		{
 			pFileName = (char*)CArrayGetAt(arrFile,i);
-			llSize = IMeGetFileSize(pFileName);
+			isDir = IMeFileIsDir( pFileName );
+			llSize = 0;
+			if( isDir==0 )
+				llSize = IMeGetFileSize(pFileName);
 			
-			pTFileInfo = IMeTFileInfoCreate( pFileName+strlen(szUplevelFilePath) , llSize , m_fileIdIndex++ );	
-			if( pTFileInfo )	CArrayAdd( arrFileList , pTFileInfo , m_fileIdIndex-1 );
+			pTFileInfo = IMeTFileInfoCreate( pFileName+strlen(szUplevelFilePath) , llSize , m_fileIdIndex , (isDir==1) );	
+			if( pTFileInfo )	CArrayAdd( arrFileList , pTFileInfo , m_fileIdIndex );
+			++m_fileIdIndex;
 
 			free(pFileName);
 		}
+		CArrayDestroy(arrFile);
 	}
-
-	CArrayDestroy(arrFile);
 
 	//create file source
 	pTFileSource = IMeTFileSourceCreate( arrFileList , szUplevelFilePath );

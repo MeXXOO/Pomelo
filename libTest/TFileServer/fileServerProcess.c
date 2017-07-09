@@ -1,15 +1,12 @@
 #include	"fileServerProcess.h"
 #include	"fileProtocol.h"
 #include	"netSrcData.h"
-#include	"../../sdk/jsonc/json_object.h"
-#include	"../../sdk/jsonc/json_tokener.h"
-
 
 IME_EXTERN_C	void	TFileServerCheckUserTransferStatus( IMeFileServer* pFileServer , void* pFileSource )
 {
 	int i;
 	int nCount = 0;
-	uint dwCurTime;
+	uint32_t dwCurTime;
 
 	while( pFileServer->m_bRunning )
 	{
@@ -25,7 +22,7 @@ IME_EXTERN_C	void	TFileServerCheckUserTransferStatus( IMeFileServer* pFileServer
 				IMeTFileSourceUser* pTFileSourceUser = (IMeTFileSourceUser*)CArrayGetAt(pFileServer->m_arrFileSourceClient,i);
 				if( dwCurTime - pTFileSourceUser->m_dwLastRcvDataTime > TFILE_RCV_TIMEOUT && 0 != pTFileSourceUser->m_dwLastRcvDataTime )
 				{
-					CArrayRemove( pFileServer->m_arrFileSourceClient , i );
+					CArrayRemoveAt( pFileServer->m_arrFileSourceClient , i );
 					DebugLogString( TRUE , "[TFileServerCheckUserTransferStatus] rcv client data time out %0x!!" , pTFileSourceUser->m_pFileSource );
 					IMeTFileSourceUserDestroy( pTFileSourceUser );
 				}
@@ -33,22 +30,22 @@ IME_EXTERN_C	void	TFileServerCheckUserTransferStatus( IMeFileServer* pFileServer
 
 			CLock_Unlock( pFileServer->m_lockClient );
 		}
-		
+
 		IMeSleep( 1000 );
 	}
 }
 
-IME_EXTERN_C	int		IMeFileServerSendData( IMeFileServer* pFileServer, void* pFileSource, char* buffer, int len )
+IME_EXTERN_C	int		IMeFileServerSendData( IMeFileServer* pFileServer, void* pFileSource, uint8_t* buffer, int len )
 {
 	if( pFileServer->m_nTransferProtocolType == TFileProtocol_Tcp )
 	{
 		IMeSocketTcp* pTcpFileSource = (IMeSocketTcp*)pFileSource;
-		return CSocketTcpSend( pTcpFileSource, buffer, len );
+		return CSocketTcpSend( pTcpFileSource, (char*)buffer, len );
 	}
 	else if( pFileServer->m_nTransferProtocolType == TFileProtocol_Udp )
 	{
 		socket_addr_t* addr_user = (socket_addr_t*)pFileSource;
-		return CSocketUdpSendByAddr( pFileServer->m_pUdpSocket, buffer, len, addr_user );
+		return CSocketUdpSendByAddr( pFileServer->m_pUdpSocket, (char*)buffer, len, addr_user );
 	}
 
 	return 0;
@@ -56,10 +53,10 @@ IME_EXTERN_C	int		IMeFileServerSendData( IMeFileServer* pFileServer, void* pFile
 
 IME_EXTERN_C	void	SendTFileClientProtocolFileEndAck( IMeFileServer* pFileServer , IMeTFileInfo* pFileInfo , IMeTFileSourceUser* pFileSourceUser )
 {
-	byte lpData[1024];
+	uint8_t lpData[1024];
 	int nOff = 0;
 	
-	uint ph;
+	uint32_t ph;
 
 	const char* fileObjStr;
 	json_object* fileObj = json_object_new_object();
@@ -87,10 +84,10 @@ IME_EXTERN_C	void	SendTFileClientProtocolFileEndAck( IMeFileServer* pFileServer 
 
 IME_EXTERN_C	void	SendTFileClientProtocolFileStartAck( IMeFileServer* pFileServer , IMeTFileSourceUser* pFileSourceUser )
 {
-	byte lpData[256];
+	uint8_t lpData[256];
 	int nOff = 0;
 	
-	uint ph;
+	uint32_t ph;
 
 	const char* fileObjStr;
 	json_object* fileObj = json_object_new_object();
@@ -114,10 +111,10 @@ IME_EXTERN_C	void	SendTFileClientProtocolFileStartAck( IMeFileServer* pFileServe
 
 IME_EXTERN_C	void	SendTFileClientProtocolRcvFileInfoAck( IMeFileServer* pFileServer , IMeTFileSourceUser* pFileSourceUser )
 {
-	byte lpData[256];
+	uint8_t lpData[256];
 	int nOff = 0;
 	
-	uint ph;
+	uint32_t ph;
 
 	const char* fileObjStr;
 	json_object* fileObj = json_object_new_object();
@@ -141,10 +138,10 @@ IME_EXTERN_C	void	SendTFileClientProtocolRcvFileInfoAck( IMeFileServer* pFileSer
 
 IME_EXTERN_C	void	SendTFileClientProtocolAccountVerifyAck( IMeFileServer* pFileServer , IMeTFileSourceUser* pFileSourceUser )
 {
-	byte lpData[1024];
+	uint8_t lpData[1024];
 	int nOff = 0;
 	
-	uint ph;
+	uint32_t ph;
 	
 	json_object* account_verify_res;
 	const char* account_verify_str;
@@ -179,7 +176,7 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvFileEnd( IMeFileServer* pFileServer , 
 {
 	int nFileID;
 
-	IMeTFileSourceUser* pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData(pFileServer->m_arrFileSourceClient,(uint64)rcvSource);
+	IMeTFileSourceUser* pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData(pFileServer->m_arrFileSourceClient,(uint32_t)rcvSource);
 	if( !pTFileSourceUser )
 	{
 		DebugLogString( TRUE , "[OnTFileServerProtocolRcvFileEnd] failed find tfile source client!!" );
@@ -188,7 +185,7 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvFileEnd( IMeFileServer* pFileServer , 
 
 	if( json_object_object_get_int( tfileEndObj , "fileID" , &nFileID ) )
 	{
-		IMeTFileInfo* pTFileInfo = CArrayFindData( pTFileSourceUser->m_listFile , (uint64)nFileID );
+		IMeTFileInfo* pTFileInfo = CArrayFindData( pTFileSourceUser->m_listFile , (uint64_t)nFileID );
 		if( pTFileInfo )
 		{
 			if( TFILE_STATUS_OVER != pTFileInfo->m_fileStatus )
@@ -212,8 +209,13 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvFileEnd( IMeFileServer* pFileServer , 
 				//exception tooltip
 				else
 				{
+					#ifdef PROJECT_FOR_WINDOWS
 					DebugLogString( TRUE , "[OnTFileServerProtocolRcvFileEnd] fileName:%s fileOffset:%I64d no equal fileSize:%I64d exception!!" ,		\
 						pTFileInfo->m_fileName , pTFileInfo->m_fileOffset , pTFileInfo->m_fileSize );
+					#else
+					DebugLogString( TRUE , "[OnTFileServerProtocolRcvFileEnd] fileName:%s fileOffset:%llu no equal fileSize:%llu exception!!" ,		\
+						pTFileInfo->m_fileName , pTFileInfo->m_fileOffset , pTFileInfo->m_fileSize );
+					#endif
 				}
 			}
 			else
@@ -228,7 +230,7 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvFileStart( IMeFileServer* pFileServer 
 {
 	int nFileID;
 
-	IMeTFileSourceUser* pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData(pFileServer->m_arrFileSourceClient,(uint64)rcvSource);
+	IMeTFileSourceUser* pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData(pFileServer->m_arrFileSourceClient,(uint32_t)rcvSource);
 	if( !pTFileSourceUser )
 	{
 		DebugLogString( TRUE , "[OnTFileServerProtocolRcvFileStart] failed find tfile source client!!" );
@@ -237,10 +239,11 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvFileStart( IMeFileServer* pFileServer 
 
 	if( json_object_object_get_int( tfileStartObj , "fileID" , &nFileID ) )
 	{
-		IMeTFileInfo* pTFileInfo = CArrayFindData( pTFileSourceUser->m_listFile , (uint64)nFileID );
+		IMeTFileInfo* pTFileInfo = CArrayFindData( pTFileSourceUser->m_listFile , (uint64_t)nFileID );
 		if( pTFileInfo )
 		{
-			if( TFILE_STATUS_OVER != pTFileInfo->m_fileStatus && pTFileInfo->m_fileCurFd==NULL )
+			DebugLogString( TRUE , "[OnTFileServerProtocolRcvFileStart] fileStatus:%d fileObject:%0x!" , pTFileInfo->m_fileStatus , pTFileInfo->m_fileCurFd );
+			if( TFILE_STATUS_OVER != pTFileInfo->m_fileStatus && pTFileInfo->m_fileCurFd==NULL && !pTFileInfo->m_fileIsDir )
 			{
 				pTFileInfo->m_fileCurFd = CFileCreate();
 				if( pTFileInfo->m_fileCurFd && CFileOpen( pTFileInfo->m_fileCurFd , pTFileInfo->m_fileName , IMeFile_OpenWrite|IMeFile_OpenCreate ) )
@@ -253,6 +256,19 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvFileStart( IMeFileServer* pFileServer 
 				}
 				else
 					DebugLogString( TRUE , "[OnTFileServerProtocolRcvFileStart] Open server file:%s failed!!" , pTFileInfo->m_fileName );
+			}
+			else if( pTFileInfo->m_fileIsDir )
+			{
+				if( IMeCreateDirectory( pTFileInfo->m_fileName ) )
+				{
+					pTFileInfo->m_fileStatus = TFILE_STATUS_RUNNING;
+					pTFileSourceUser->m_fileCurTID = nFileID;
+					DebugLogString( TRUE , "[OnTFileServerProtocolRcvFileStart] start file is a directory:%s!!" , pTFileInfo->m_fileName );
+
+					SendTFileClientProtocolFileStartAck( pFileServer , pTFileSourceUser );
+				}
+				else
+					DebugLogString( TRUE , "[OnTFileServerProtocolRcvFileStart] create file directory:%s failed!!" , pTFileInfo->m_fileName );
 			}
 			else
 			{
@@ -272,7 +288,7 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvFileStart( IMeFileServer* pFileServer 
 
 IME_EXTERN_C	void	OnTFileServerProtocolFilesOver( IMeFileServer* pFileServer , json_object* tfileFilesOverObj , void* rcvSource )
 {
-	IMeTFileSourceUser* pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData(pFileServer->m_arrFileSourceClient,(uint64)rcvSource);
+	IMeTFileSourceUser* pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData(pFileServer->m_arrFileSourceClient,(uint32_t)rcvSource);
 	if( !pTFileSourceUser )
 	{
 		DebugLogString( TRUE , "[OnTFileServerProtocolFilesOver] failed find tfile source client!!" );
@@ -281,27 +297,27 @@ IME_EXTERN_C	void	OnTFileServerProtocolFilesOver( IMeFileServer* pFileServer , j
 
     DebugLogString( TRUE , "[OnTFileServerProtocolFilesOver] ======%0x" , pTFileSourceUser->m_pFileSource );
 
-	CArrayRemove( pFileServer->m_arrFileSourceClient , (uint64)rcvSource );
+	CArrayRemove( pFileServer->m_arrFileSourceClient , (uint32_t)rcvSource );
 	IMeTFileSourceUserDestroy( pTFileSourceUser );
 }
 
 IME_EXTERN_C	void	OnTFileServerProtocolFilesCancel( IMeFileServer* pFileServer , json_object* tfileFilesOverObj , void* rcvSource )
 {
-	IMeTFileSourceUser* pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData(pFileServer->m_arrFileSourceClient,(uint64)rcvSource);
+	IMeTFileSourceUser* pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData(pFileServer->m_arrFileSourceClient,(uint32_t)rcvSource);
 	if( !pTFileSourceUser )
 	{
 		DebugLogString( TRUE , "[OnTFileServerProtocolFilesCancel] failed find tfile source client!!" );
 		return;
 	}
 
-	CArrayRemove( pFileServer->m_arrFileSourceClient , (uint64)rcvSource );
+	CArrayRemove( pFileServer->m_arrFileSourceClient , (uint32_t)rcvSource );
 	IMeTFileSourceUserDestroy( pTFileSourceUser );
 }
 
 IME_EXTERN_C	void	OnTFileServerProtocolRcvFilesInfo( IMeFileServer* pFileServer , json_object* tfileFilesInfoObj , void* rcvSource )
 {
 	int i;
-	IMeTFileSourceUser* pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData(pFileServer->m_arrFileSourceClient,(uint64)rcvSource);
+	IMeTFileSourceUser* pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData(pFileServer->m_arrFileSourceClient,(uint32_t)rcvSource);
 	if( !pTFileSourceUser )
 	{
 		DebugLogString( TRUE , "[OnTFileServerProtocolRcvFilesInfo] failed find tfile source client!!" );
@@ -312,21 +328,27 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvFilesInfo( IMeFileServer* pFileServer 
 	{
 		json_object* fileObj = json_object_array_get_idx(tfileFilesInfoObj,i);
 		const char* fileName = json_object_object_get_string( fileObj , "fileName" );
-		uint64 fileSize;
-		uint fileID;
+		uint64_t fileSize;
+		int32_t fileID;
+		int32_t fileIsDir;
 		IMeTFileInfo* pTFileInfo;
 
 		char szFileName[256];
 
-		json_object_object_get_int64( fileObj , "fileSize" , &fileSize );
-		json_object_object_get_int( fileObj , "fileID" , (int*)&fileID );
+		json_object_object_get_int64( fileObj , "fileSize" , (int64_t*)&fileSize );
+		json_object_object_get_int( fileObj , "fileID" , &fileID );
+		json_object_object_get_int( fileObj , "fileIsDir" , &fileIsDir );
 		
 		sprintf( szFileName , "%s%s" , pFileServer->m_fileDir , fileName );
-		pTFileInfo = IMeTFileInfoCreate( szFileName , fileSize , fileID );
+		pTFileInfo = IMeTFileInfoCreate( szFileName , fileSize , fileID , fileIsDir );
 		if( pTFileInfo )
 		{
-			CArrayAdd( pTFileSourceUser->m_listFile , pTFileInfo , (uint64)fileID );
+			CArrayAdd( pTFileSourceUser->m_listFile , pTFileInfo , (uint64_t)fileID );
+			#ifdef 	PROJECT_FOR_WINDOWS
 			DebugLogString( TRUE , "[OnTFileServerProtocolRcvFilesInfo] add file:%s fileSize:%I64d fileID:%d!" , szFileName , fileSize , fileID );
+			#else
+			DebugLogString( TRUE , "[OnTFileServerProtocolRcvFilesInfo] add file:%s fileSize:%llu fileID:%d!" , szFileName , fileSize , fileID );
+			#endif
 		}
 	}
 
@@ -339,13 +361,13 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvAccountVerify( IMeFileServer* pFileSer
 {
 	const char* pClientUserName = json_object_object_get_string( tfileAccountObj , "uname" );
 	const char* pClientUserPass = json_object_object_get_string( tfileAccountObj , "upass" );
-	byte bVerifyRes = TRUE;
+	uint8_t bVerifyRes = TRUE;
 
 	DebugLogString( TRUE , "[OnTFileServerProtocolRcvAccountVerify] UName:%s UPass:%s!!" , pClientUserName?pClientUserName:"NULL" , pClientUserPass?pClientUserPass:"NULL" );
 	
 	if( bVerifyRes )
 	{
-		IMeTFileSourceUser* pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData( pFileServer->m_arrFileSourceClient , (uint64)rcvSource );
+		IMeTFileSourceUser* pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData( pFileServer->m_arrFileSourceClient , (uint32_t)rcvSource );
 		if( pTFileSourceUser )
 		{
 			pTFileSourceUser->m_bVerify = TRUE;
@@ -364,7 +386,7 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvAccountVerify( IMeFileServer* pFileSer
 }
 
 /* json cmd from client */
-IME_EXTERN_C	void	OnTFileServerProtocolRcvJsonCmd( IMeFileServer* pFileServer , uint tfilePH , IMeNetSrcData* pNetSrcData )
+IME_EXTERN_C	void	OnTFileServerProtocolRcvJsonCmd( IMeFileServer* pFileServer , uint32_t tfilePH , IMeNetSrcData* pNetSrcData )
 {
 	int nCmd = TFILEH_CMD(tfilePH);
 	int nOff = 4; /* ph-4byte */
@@ -403,7 +425,7 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvJsonCmd( IMeFileServer* pFileServer , 
 }
 
 /* binary data from client */
-IME_EXTERN_C	void	OnTFileServerProtocolRcvBinary( IMeFileServer* pFileServer , uint tfilePH , IMeNetSrcData* pNetSrcData )
+IME_EXTERN_C	void	OnTFileServerProtocolRcvBinary( IMeFileServer* pFileServer , uint32_t tfilePH , IMeNetSrcData* pNetSrcData )
 {
 	int nCmd = TFILEH_CMD(tfilePH);
 	if( nCmd == TFILE_C2S_ADD_FILE_DATA )
@@ -413,7 +435,7 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvBinary( IMeFileServer* pFileServer , u
 		IMeTFileInfo* pTFileInfo = NULL;
 		IMeTFileSourceUser* pTFileSourceUser = NULL;
 		
-		pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData(pFileServer->m_arrFileSourceClient,(uint64)pNetSrcData->pDataSrc);
+		pTFileSourceUser = (IMeTFileSourceUser*)CArrayFindData(pFileServer->m_arrFileSourceClient,(uint32_t)pNetSrcData->pDataSrc);
 		if( !pTFileSourceUser )
 		{
 			DebugLogString( TRUE , "[OnTFileServerProtocolRcvBinary] failed find tfile source client!!" );
@@ -422,7 +444,7 @@ IME_EXTERN_C	void	OnTFileServerProtocolRcvBinary( IMeFileServer* pFileServer , u
 		
 		pTFileSourceUser->m_dwLastRcvDataTime = IMeGetCurrentTime();
 		
-		pTFileInfo = (IMeTFileInfo*)CArrayFindData( pTFileSourceUser->m_listFile , (uint64)pTFileSourceUser->m_fileCurTID );
+		pTFileInfo = (IMeTFileInfo*)CArrayFindData( pTFileSourceUser->m_listFile , (uint64_t)pTFileSourceUser->m_fileCurTID );
 		if( pTFileInfo && pTFileInfo->m_fileCurFd && CFileIsOpen(pTFileInfo->m_fileCurFd) )
 		{
 			if( pTFileInfo->m_fileOffset < pTFileInfo->m_fileSize )
@@ -447,7 +469,7 @@ IME_EXTERN_C	void	OnTFileServerProtocolBlocked( IMeFileServer* pFileServer , voi
 {
 	IMeTFileSourceUser* pTFileSourceUser;
 
-	pTFileSourceUser = (IMeTFileSourceUser*)CArrayRemove( pFileServer->m_arrFileSourceClient , (uint64)pDataSourceUser );
+	pTFileSourceUser = (IMeTFileSourceUser*)CArrayRemove( pFileServer->m_arrFileSourceClient , (uint32_t)pDataSourceUser );
 
 	//check file source status
 	if( pTFileSourceUser )
@@ -465,7 +487,7 @@ IME_EXTERN_C	void	OnTFileServerRcvNetData( IMeFileServer* pFileServer , IMeNetSr
 	if( NULL != pNetSrcData->lpData && pNetSrcData->nLen > 0 )
 	{
 		int nOff = 0;
-		uint ph = *(uint*)&pNetSrcData->lpData[nOff];	
+		uint32_t ph = *(uint32_t*)&pNetSrcData->lpData[nOff];	
 		int nFormat = TFILEH_DFORMAT(ph);
 		int nAppClient = TFILEH_APP(ph);
 

@@ -22,9 +22,9 @@ public:
 	~CTFileClient();
 
 public:
-	bool	m_bRunning;
-	bool	m_bConnectSuccess;
-	bool	m_bLoginSuccess;
+	uint8_t	m_bRunning;
+	uint8_t	m_bConnectSuccess;
+	uint8_t	m_bLoginSuccess;
 
 public:
 	OnRcvTFileClientStatus	m_statusCB;
@@ -41,29 +41,30 @@ public:
 	int		m_nAFFamily;
 
 public:
-	char* m_fileMainDir;
-	uint	m_fileIdIndex;
+	char* 		m_fileMainDir;
+	uint32_t	m_fileIdIndex;
 	IMeList*	m_listFileSource;
 	IMeLock*	m_lockerListFileSource;
 
 public:
-	bool	m_bUploading;
+	uint8_t	m_bUploading;
 	IMeThread*	m_thread;
+	IMeEvent*	m_evWaitAck;
 
 public:
 	void	ReleaseFileInfoList();
 
 public:
-	bool	Init( int nTransferProtocolType );
+	uint8_t	Init( int nTransferProtocolType );
 	void	DeInit();
 	void	SetCallBack( OnRcvTFileClientStatus CB , void* upApp );
 
 public:
-	void	StartUploadThead( boolean bStart );
+	void	StartUploadThead( uint8_t bStart );
     void    DisconnectServer();
-	bool	ConnectServer( const char* pServerAddress , ushort port , int nAFFamily );
+	uint8_t	ConnectServer( const char* pServerAddress , uint16_t port , int nAFFamily );
 	void	LoginServer( const char* pAccount , const char* pPassword );
-	bool	CommitFileInfo( const char* pFilePath );
+	uint8_t	CommitFileInfo( const char* pFilePath );
 
 public:
 	int		SendLocalData( char* buffer, int len );

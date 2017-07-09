@@ -3,17 +3,7 @@
 
 #include    "array.h"
 
-//time define for IMeGetCurrentTimeYMDHMS interface
-typedef struct _IMeTime{
-	int32_t	year;
-	int32_t	month;
-	int32_t	day;
-	int32_t	hour;
-	int32_t	minute;
-	int32_t	second;
-}IMeTime;
-
-/* 带值字符串拷贝,malloc分配内存,需释放 */
+/* 带值字符串拷贝 */
 IME_EXTERN_C char*   IMeCopyString( const char* pString );
 
 /* 创建文件路径 */
@@ -28,7 +18,7 @@ IME_EXTERN_C uint64_t  IMeGetFileSize( const char* pFilePathName );
 /* 搜索主目录下的第一级子目录名并在列表中返回 */
 IME_EXTERN_C void    IMeGetSubDirList( const char* szMainDir , IMeArray* arrSubDir );  
 /* 获取目录下的所有文件名 */
-IME_EXTERN_C void	 IMeGetSubDirFileList( const char* szMainDir , IMeArray* arrSubDirFile , uint8_t bFullPath , uint8_t bIncludeDir );
+IME_EXTERN_C void	 IMeGetSubDirFileList( const char* szMainDir , IMeArray* arrSubDirFile , uint8_t bIncludePath );
 
 /* 获取当前路径的上一级目录全路径
  * @egg: d:\\mypath\curpath nLevel:1 ==> d:\\mypath\
@@ -54,12 +44,8 @@ IME_EXTERN_C void    IMePowerOffSystem();
 IME_EXTERN_C void    IMeCreateGUID( char* szGuid );                                  
 /* 获取当前时间(ms为单位) */                                                
 IME_EXTERN_C uint32_t    IMeGetCurrentTime();
-/* 获取当前系统时间 */
-IME_EXTERN_C void 	 IMeGetCurrentTimeYMDHMS( IMeTime* pMeTime );
 /* 挂起当前线程 */
 IME_EXTERN_C void    IMeSleep( uint32_t dwMiliseconds );  
-
-
 
 #endif
 

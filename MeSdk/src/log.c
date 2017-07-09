@@ -8,11 +8,10 @@ IME_EXTERN_C char*	 _ErrorCodeString()
 
 IME_EXTERN_C void	 DebugLogTime( char* buffer )
 {
-#ifdef PROJECT_FOR_WINDOWS
-	SYSTEMTIME st; 
-	GetLocalTime(&st);
-	sprintf( buffer , "%04d-%02d-%02d %02d:%02d:%02d " , st.wYear , st.wMonth , st.wDay , st.wHour , st.wMinute , st.wSecond );
-#endif
+    IMeTime st;
+    IMeGetCurrentTimeYMDHMS( &st );
+
+	sprintf( buffer , "%04d-%02d-%02d %02d:%02d:%02d " , st.year , st.month , st.day , st.hour , st.minute , st.second );
 }
 
 IME_EXTERN_C void    DebugLogString( int bOut , char* format , ... )

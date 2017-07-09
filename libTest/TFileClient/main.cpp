@@ -45,6 +45,7 @@ void	OnRcvMainTFileClientStatus( int nNotifyStatus , void* upApp )
 int main(int argc, char* argv[])
 {
 	int protocolStart;
+	char szServer[256];
 
 #ifdef	WIN32
 
@@ -57,32 +58,36 @@ int main(int argc, char* argv[])
 
 #endif
 
-	DebugLogString( TRUE , "[main] usage===>\n client 1[1:udp][2:tcp] /usr/local/filename" );
+	DebugLogString( TRUE , "[main] usage===>\n client 1[1:udp][2:tcp] 192.168.9.77(server) /usr/local/filename" );
+
+	if( argc != 4 )
+	{
+		DebugLogString( TRUE , "[main] invalid parameter count!!" );
+		return -1;
+	}
 
 	protocolStart = TFileProtocol_Udp;
-	if( argc >= 2 )
-	{
-		protocolStart = atoi(argv[1]);
-	}
+	protocolStart = atoi(argv[1]);
 
-	sprintf( g_uploadFile, "%s", FILECLIENT_UPLOADFILE );
-	if( argc >= 3 )
-	{
-		sprintf( g_uploadFile, "%s", argv[2] );
-	}
+	sprintf( szServer, "%s", argv[2] );	
+	sprintf( g_uploadFile, "%s", argv[3] );
+
+	DebugLogString( TRUE , "[main] protocol:%d server:%s uploadFile:%s!!" , protocolStart, szServer, g_uploadFile );
 
 	g_fileClient = new CTFileClient();
 	g_fileClient->SetCallBack( OnRcvMainTFileClientStatus , NULL );
 	g_fileClient->Init( protocolStart );
 
-	if( g_fileClient->ConnectServer( "192.168.1.77" , 10000 , AF_INET ) )
+	if( g_fileClient->ConnectServer( szServer , 10000 , AF_INET ) )
 	{
 		g_fileClient->LoginServer( "TFileClient" , "TFileClient" );
 	}
 
+#ifdef	PROJECT_FOR_WINDOWS
     system( "pause" );
-	
-	DebugLogString( TRUE , "[main] protocolStart:%d" , protocolStart );
+#else
+    while( TRUE )	IMeSleep(1000);
+#endif
 
 //ห๏วเ-PC\ห๏วเ
 	g_fileClient->StartUploadThead( FALSE );

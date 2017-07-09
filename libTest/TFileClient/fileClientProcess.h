@@ -13,7 +13,7 @@ IME_EXTERN_C	void	TFileClientTheadUploadFile( void* parameter );
 /* snd cmd to tfile server                                                                     */
 /************************************************************************/
 IME_EXTERN_C	void	SendTFileServerLoginUserInfo( CTFileClient* pFileClient , const char* pAccount , const char* pPassword );
-IME_EXTERN_C	bool	SendTFileServerLocalFileInfo( CTFileClient* pFileClient , IMeTFileSource* pFileSource );
+IME_EXTERN_C	uint8_t	SendTFileServerLocalFileInfo( CTFileClient* pFileClient , IMeTFileSource* pFileSource );
 
 IME_EXTERN_C	void	SendTFileServerLocalFileStart( CTFileClient* pFileClient , IMeTFileInfo* pFileInfo );
 IME_EXTERN_C	void	SendTFileServerLocalFileData( CTFileClient* pFileClient , IMeTFileSource* pFileSource , IMeTFileInfo* pFileInfo );
@@ -33,8 +33,8 @@ IME_EXTERN_C	void	OnTFileClientProtocolRcvFilesInfoAck( CTFileClient* pFileClien
 IME_EXTERN_C	void	OnTFileClientProtocolRcvAccountVerifyAck( CTFileClient* pFileClient , json_object* tfileAccountObj , void* rcvSource );
 
 
-IME_EXTERN_C	void	OnTFileClientProtocolRcvJsonCmd( CTFileClient* pFileClient , uint tfilePH , char* lpData , int nLen );
-IME_EXTERN_C	void	OnTFileClientProtocolRcvBinary( CTFileClient* pFileClient , uint tfilePH , char* lpData , int nLen );
+IME_EXTERN_C	void	OnTFileClientProtocolRcvJsonCmd( CTFileClient* pFileClient , uint32_t tfilePH , char* lpData , int nLen );
+IME_EXTERN_C	void	OnTFileClientProtocolRcvBinary( CTFileClient* pFileClient , uint32_t tfilePH , char* lpData , int nLen );
 IME_EXTERN_C	void	OnTFileClientProtocolBlocked( CTFileClient* pFileClient , void* pDataSourceUser );
 
 

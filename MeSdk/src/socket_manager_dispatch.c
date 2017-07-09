@@ -97,7 +97,7 @@ static void	IMeCSocketDispatchGroupWorkEventListenerOnNotify( short events , IMe
 	pSocketDispatchUser = (IMeSocketDispatchUser*)CSocketGetExtendParameter(s);
 
 	if( pSocketDispatchUser )
-	{
+	{	
 		//has read event
 		if( events&SEvent_Read )
 		{
