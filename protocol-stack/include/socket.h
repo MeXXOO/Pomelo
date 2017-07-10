@@ -61,10 +61,10 @@ typedef int       (*IMeSocketGetFd)( IMeSocket* pISocket );
 typedef int           (*IMeSocketGetType)( IMeSocket* pISocket );
 
 typedef	void		  (*IMeSocketSetEventParameter)( IMeSocket* pISocket , uint32_t parameter  );
-typedef uint32_t		  (*IMeSocketGetEventParameter)( IMeSocket* pISocket );
+typedef long		  (*IMeSocketGetEventParameter)( IMeSocket* pISocket );
 
 typedef void		  (*IMeSocketSetExtendParameter)( IMeSocket* pISocket , uint32_t parameter );
-typedef uint32_t		  (*IMeSocketGetExtendParameter)( IMeSocket* pISocket );
+typedef long		  (*IMeSocketGetExtendParameter)( IMeSocket* pISocket );
 
 struct _IMeSocket{
     IMeSocketDestroy    m_pDestroy;

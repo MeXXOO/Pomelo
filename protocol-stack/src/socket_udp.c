@@ -234,10 +234,10 @@ void    IMeUdpPacketDestroy( IMeCUdpSocket* pUdpSocket, IMeUdpPacket* pUdpPacket
 }
 
 //sort receive or send user array 
-int OnUdpRSUserArrayKeyCompare( uint64_t nKey1 , uint64_t nKey2 , void* parameter )
+int OnUdpRSUserArrayKeyCompare( long nKey1 , long nKey2 , void* parameter )
 {
-	IMeUdpUser* pUdpUser1 = (IMeUdpUser*)(uint32_t)nKey1;
-	IMeUdpUser* pUdpUser2 = (IMeUdpUser*)(uint32_t)nKey2;
+	IMeUdpUser* pUdpUser1 = (IMeUdpUser*)nKey1;
+	IMeUdpUser* pUdpUser2 = (IMeUdpUser*)nKey2;
 
 	if( pUdpUser1->mUserAddr.family == pUdpUser2->mUserAddr.family )
 	{
@@ -631,7 +631,7 @@ void	IMeCUdpSocketAutoCheckNet( IMeCUdpSocket* pUdpSocket )
 
 void    IMeCUdpSocketRead( IMeCUdpSocket* pUdpSocket )
 {   
-    int nRes;
+    POMInteger nRes;
     
 	socket_addr_t rcv_addr;
 
@@ -653,7 +653,7 @@ void    IMeCUdpSocketRead( IMeCUdpSocket* pUdpSocket )
 		}
         
         //process data
-        IMeCUdpSocketRcvDataProcess( pUdpSocket, szBuffer, nRes, &rcv_addr );
+        IMeCUdpSocketRcvDataProcess( pUdpSocket, szBuffer, (int)nRes, &rcv_addr );
 
 		//check free no received over cache buffer data
 		IMeCUdpSocketCheckCacheBuffer( pUdpSocket );
@@ -666,7 +666,7 @@ void    IMeCUdpSocketRead( IMeCUdpSocket* pUdpSocket )
 //send packet to remote
 uint8_t IMeCUdpSocketWrite( IMeCUdpSocket* pUdpSocket , uint8_t* lpData , int nLen , socket_addr_t* addr_t )
 {
-    int nSendLen = CSocketSendToByAddr( pUdpSocket->m_pSocket , addr_t , (char*)lpData , nLen , 0 );
+    POMInteger nSendLen = CSocketSendToByAddr( pUdpSocket->m_pSocket , addr_t , (char*)lpData , nLen , 0 );
 	//if send data len less than packet size , resend this packet next time
     return nSendLen==nLen;
 }
@@ -866,7 +866,7 @@ void	IMeUdpSocketDispatchUserSetExtendParameter( IMeSocketDispatchUser* pSocketD
 	pSocketUdp->m_dispatchUser_extendParameter = extendParameter;
 }
 
-uint32_t	IMeUdpSocketDispatchUserGetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser )
+long	IMeUdpSocketDispatchUserGetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser )
 {
 	IMeCUdpSocket* pSocketUdp = (IMeCUdpSocket*)pSocketDispatchUser;
 	return pSocketUdp->m_dispatchUser_extendParameter;

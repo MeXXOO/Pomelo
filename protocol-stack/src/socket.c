@@ -922,7 +922,7 @@ void	IMeCSocketSetExtendParameter( IMeSocket* pISocket , uint32_t parameter )
 	pSocket->s_extendparameter = parameter;
 }
 
-uint32_t	IMeCSocketGetExtendParameter( IMeSocket* pISocket )
+long	IMeCSocketGetExtendParameter( IMeSocket* pISocket )
 {
 	IMeCSocket* pSocket = (IMeCSocket*)pISocket;
 	return pSocket->s_extendparameter;	
@@ -934,7 +934,7 @@ void	IMeCSocketSetEventParameter( IMeSocket* pISocket , uint32_t parameter  )
 	pSocket->s_eventparameter = parameter;
 }
 
-uint32_t	IMeCSocketGetEventParameter( IMeSocket* pISocket )
+long	IMeCSocketGetEventParameter( IMeSocket* pISocket )
 {
 	IMeCSocket* pSocket = (IMeCSocket*)pISocket;
 	return pSocket->s_eventparameter;	

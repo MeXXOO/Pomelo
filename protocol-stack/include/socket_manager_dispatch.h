@@ -11,7 +11,7 @@ typedef		void		(*IMeSocketDispatchUserSend)( IMeSocketDispatchUser* pSocketDispa
 typedef		void		(*IMeSocketDispatchUserRcv)( IMeSocketDispatchUser* pSocketDispatchUser );
 typedef		void		(*IMeSocketDispatchUserException)( IMeSocketDispatchUser* pSocketDispatchUser );
 typedef		void		(*IMeSocketDispatchUserSetExtendParameter)( IMeSocketDispatchUser* pSocketDispatchUser , uint32_t extendParameter );
-typedef		uint32_t	(*IMeSocketDispatchUserGetExtendParameter)( IMeSocketDispatchUser* pSocketDispatchUser );
+typedef		long	(*IMeSocketDispatchUserGetExtendParameter)( IMeSocketDispatchUser* pSocketDispatchUser );
 typedef		IMeSocket*	(*IMeSocketDispatchUserGetSocket)( IMeSocketDispatchUser* pSocketDispatchUser );
 
 struct _IMeSocketDispatchUser{

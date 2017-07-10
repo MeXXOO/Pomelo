@@ -19,7 +19,7 @@ typedef struct _IMeCArray{
 	void* mParameter;
 }IMeCArray;
 
-int    IMeCArrayCompareKeyValue( IMeCArray* pArray, uint64_t keyValue1, uint64_t keyValue2 )
+int    IMeCArrayCompareKeyValue( IMeCArray* pArray, long keyValue1, long keyValue2 )
 {
     if( pArray->mCompareKeyValue )
         return pArray->mCompareKeyValue(keyValue1,keyValue2,pArray->mParameter);
@@ -34,7 +34,7 @@ int    IMeCArrayCompareKeyValue( IMeCArray* pArray, uint64_t keyValue1, uint64_t
     }
 }
 
-int     IMeCArrayInnerFindIndex( IMeCArray* pArray, uint64_t keyValue, int low, int high )
+int     IMeCArrayInnerFindIndex( IMeCArray* pArray, long keyValue, int low, int high )
 {
     int mid = -1;
     int compareResult;
@@ -48,7 +48,7 @@ int     IMeCArrayInnerFindIndex( IMeCArray* pArray, uint64_t keyValue, int low, 
     {  
         mid = (low + high) / 2;  
         
-        compareResult = IMeCArrayCompareKeyValue( pArray, pArray->m_data[mid].keyValue, keyValue );
+        compareResult = IMeCArrayCompareKeyValue( pArray, (long)pArray->m_data[mid].keyValue, keyValue );
 
         if( 0 == compareResult )  
         {  

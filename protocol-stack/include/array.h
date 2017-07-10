@@ -10,7 +10,7 @@ typedef struct _IMeArray    IMeArray;
 //keyValue1==keyValue2 ==> 0
 //keyValue1 < keyValue2 ==> 1
 //keyValue1 > keyValue2 ==> -1
-typedef int (*IMeArrayCompareKeyValue)( uint64_t keyValue1, uint64_t keyValue2, void* parameter );
+typedef int (*IMeArrayCompareKeyValue)( long keyValue1, long keyValue2, void* parameter );
 
 IME_EXTERN_C IMeArray*       IMeArrayCreate( int sortType );
 

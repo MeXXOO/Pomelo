@@ -203,7 +203,7 @@ void	IMeTcpSocketDispatchUserSetExtendParameter( IMeSocketDispatchUser* pSocketD
 	pSocketTcp->m_dispatchUser_extendParameter = extendParameter;
 }
 
-uint32_t	IMeTcpSocketDispatchUserGetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser )
+long	IMeTcpSocketDispatchUserGetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser )
 {
 	IMeCSocketTcp* pSocketTcp = (IMeCSocketTcp*)pSocketDispatchUser;
 	return pSocketTcp->m_dispatchUser_extendParameter;

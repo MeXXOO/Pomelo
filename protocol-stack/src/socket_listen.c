@@ -106,7 +106,7 @@ IME_EXTERN_C void	IMeListenSocketDispatchUserSetExtendParameter( IMeSocketDispat
 	pSocketListen->m_dispatchUser_extendParameter = extendParameter;
 }
 
-IME_EXTERN_C uint32_t	IMeListenSocketDispatchUserGetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser )
+IME_EXTERN_C long	IMeListenSocketDispatchUserGetExtendParameter( IMeSocketDispatchUser* pSocketDispatchUser )
 {
 	IMeCSocketListen* pSocketListen = (IMeCSocketListen*)pSocketDispatchUser;
 	return pSocketListen->m_dispatchUser_extendParameter;
