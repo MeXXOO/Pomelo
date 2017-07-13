@@ -22,4 +22,4 @@
 ```
 
 ### 手机号登录流程图
-![](login_workflow.svg)
+![image](./login_workflow.png)
